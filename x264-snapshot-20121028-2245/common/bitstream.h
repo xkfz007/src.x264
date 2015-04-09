@@ -30,7 +30,7 @@
 
 
 #include "common/osdep.h"
-#include "common/common_common.h"
+#include "common/common.h"
 
 typedef struct
 {

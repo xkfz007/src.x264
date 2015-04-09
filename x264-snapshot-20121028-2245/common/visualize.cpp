@@ -46,7 +46,16 @@
 #include "visualize.h"
 #include "display.h"
 
-
+typedef struct
+{
+    int     i_type;
+    int     i_partition;
+    int     i_sub_partition[4];
+    int     i_intra16x16_pred_mode;
+    int     intra4x4_pred_mode[4][4];
+    int8_t  ref[2][4][4];                  /* [list][y][x] */
+    int16_t mv[2][4][4][2];                /* [list][y][x][mvxy] */
+} visualize_t;
 
 /* Return string from stringlist corresponding to the given code */
 #define GET_STRING(sl, code) get_string((sl), sizeof(sl)/sizeof(*(sl)), code)

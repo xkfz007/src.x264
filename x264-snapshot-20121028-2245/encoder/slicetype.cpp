@@ -508,6 +508,9 @@ static void x264_slicetype_mb_cost( x264_t *h, x264_mb_analysis_t *a,
         mv[0] = x264_clip3( mv[0], h->mb.mv_min_spel[0], h->mb.mv_max_spel[0] ); \
         mv[1] = x264_clip3( mv[1], h->mb.mv_min_spel[1], h->mb.mv_max_spel[1] ); \
     }
+
+#define USE_MACRO 0
+#if USE_MACARO
 #define TRY_BIDIR( mv0, mv1, penalty ) \
     { \
         int i_cost; \
@@ -533,6 +536,7 @@ static void x264_slicetype_mb_cost( x264_t *h, x264_mb_analysis_t *a,
                            m[0].p_fenc[0], FENC_STRIDE, pix1, 16 ); \
         COPY2_IF_LT( i_bcost, i_cost, list_used, 3 ); \
     }
+#endif
 
     m[0].i_pixel = PIXEL_8x8;
     m[0].p_cost_mv = a->p_cost_mv;
@@ -568,7 +572,34 @@ static void x264_slicetype_mb_cost( x264_t *h, x264_mb_analysis_t *a,
         if( h->param.analyse.i_subpel_refine <= 1 )
             M64( dmv ) &= ~0x0001000100010001ULL; /* mv & ~1 */
 
+#if USE_MACRO
         TRY_BIDIR( dmv[0], dmv[1], 0 );
+#else
+    { 
+        int i_cost; 
+        if( h->param.analyse.i_subpel_refine <= 1 ) 
+        { 
+            int hpel_idx1 = (((dmv[0])[0]&2)>>1) + ((dmv[0])[1]&2); 
+            int hpel_idx2 = (((dmv[1])[0]&2)>>1) + ((dmv[1])[1]&2); 
+            pixel *src1 = m[0].p_fref[hpel_idx1] + ((dmv[0])[0]>>2) + ((dmv[0])[1]>>2) * m[0].i_stride[0]; 
+            pixel *src2 = m[1].p_fref[hpel_idx2] + ((dmv[1])[0]>>2) + ((dmv[1])[1]>>2) * m[1].i_stride[0]; 
+            h->mc.avg[PIXEL_8x8]( pix1, 16, src1, m[0].i_stride[0], src2, m[1].i_stride[0], i_bipred_weight ); 
+        } 
+        else 
+        { 
+            intptr_t stride1 = 16, stride2 = 16; 
+            pixel *src1, *src2; 
+            src1 = h->mc.get_ref( pix1, &stride1, m[0].p_fref, m[0].i_stride[0], 
+                                  (dmv[0])[0], (dmv[0])[1], 8, 8, w ); 
+            src2 = h->mc.get_ref( pix2, &stride2, m[1].p_fref, m[1].i_stride[0], 
+                                  (dmv[1])[0], (dmv[1])[1], 8, 8, w ); 
+            h->mc.avg[PIXEL_8x8]( pix1, 16, src1, stride1, src2, stride2, i_bipred_weight ); 
+        } 
+        i_cost = 0 * a->i_lambda + h->pixf.mbcmp[PIXEL_8x8]( 
+                           m[0].p_fenc[0], FENC_STRIDE, pix1, 16 ); 
+        COPY2_IF_LT( i_bcost, i_cost, list_used, 3 ); 
+    }
+#endif
         if( M64( dmv ) )
         {
             int i_cost;
@@ -636,7 +667,34 @@ skip_motionest:
     }
 
     if( b_bidir && ( M32( m[0].mv ) || M32( m[1].mv ) ) )
+#if USE_MACRO
         TRY_BIDIR( m[0].mv, m[1].mv, 5 );
+#else
+    { 
+        int i_cost; 
+        if( h->param.analyse.i_subpel_refine <= 1 ) 
+        { 
+            int hpel_idx1 = (((m[0].mv)[0]&2)>>1) + ((m[0].mv)[1]&2); 
+            int hpel_idx2 = (((m[1].mv)[0]&2)>>1) + ((m[1].mv)[1]&2); 
+            pixel *src1 = m[0].p_fref[hpel_idx1] + ((m[0].mv)[0]>>2) + ((m[0].mv)[1]>>2) * m[0].i_stride[0]; 
+            pixel *src2 = m[1].p_fref[hpel_idx2] + ((m[1].mv)[0]>>2) + ((m[1].mv)[1]>>2) * m[1].i_stride[0]; 
+            h->mc.avg[PIXEL_8x8]( pix1, 16, src1, m[0].i_stride[0], src2, m[1].i_stride[0], i_bipred_weight ); 
+        } 
+        else 
+        { 
+            intptr_t stride1 = 16, stride2 = 16; 
+            pixel *src1, *src2; 
+            src1 = h->mc.get_ref( pix1, &stride1, m[0].p_fref, m[0].i_stride[0], 
+                                  (m[0].mv)[0], (m[0].mv)[1], 8, 8, w ); 
+            src2 = h->mc.get_ref( pix2, &stride2, m[1].p_fref, m[1].i_stride[0], 
+                                  (m[1].mv)[0], (m[1].mv)[1], 8, 8, w ); 
+            h->mc.avg[PIXEL_8x8]( pix1, 16, src1, stride1, src2, stride2, i_bipred_weight ); 
+        } 
+        i_cost = 5* a->i_lambda + h->pixf.mbcmp[PIXEL_8x8]( 
+                           m[0].p_fenc[0], FENC_STRIDE, pix1, 16 ); 
+        COPY2_IF_LT( i_bcost, i_cost, list_used, 3 ); 
+    }
+#endif
 
 lowres_intra_mb:
     if( !fenc->b_intra_calculated )
@@ -672,8 +730,10 @@ lowres_intra_mb:
         i_icost += intra_penalty + lowres_penalty;
         fenc->i_intra_cost[i_mb_xy] = i_icost;
         int i_icost_aq = i_icost;
+#if _USE_INV_QSCALE_
         if( h->param.rc.i_aq_mode )
             i_icost_aq = (i_icost_aq * fenc->i_inv_qscale_factor[i_mb_xy] + 128) >> 8;
+#endif
         output_intra[ROW_SATD] += i_icost_aq;
         if( b_frame_score_mb )
         {
@@ -702,8 +762,10 @@ lowres_intra_mb:
     if( p0 != p1 )
     {
         int i_bcost_aq = i_bcost;
+#if _USE_INV_QSCALE_
         if( h->param.rc.i_aq_mode )
             i_bcost_aq = (i_bcost_aq * fenc->i_inv_qscale_factor[i_mb_xy] + 128) >> 8;
+#endif
         output_inter[ROW_SATD] += i_bcost_aq;
         if( b_frame_score_mb )
         {
@@ -849,37 +911,8 @@ static int x264_slicetype_frame_cost( x264_t *h, x264_mb_analysis_t *a,
             memset( output_inter[0], 0, (output_buf_size - PAD_SIZE) * sizeof(int) );
             memset( output_intra[0], 0, (output_buf_size - PAD_SIZE) * sizeof(int) );
             output_inter[0][NUM_ROWS] = output_intra[0][NUM_ROWS] = h->mb.i_mb_height;
-
-            x264_slicetype_slice_t s ;//= (x264_slicetype_slice_t){ h, a, frames, p0, p1, b, dist_scale_factor, do_search, w,
-                                      //                           output_inter[0], output_intra[0] };
-			s.h = h;
-			s.a = a;
-			s.frames = frames;
-			s.p0 = p0;
-			s.p1 = p1;
-			s.b  = b;
-			s.dist_scale_factor = dist_scale_factor;
-			s.do_search = do_search;
-			s.w = w;
-			s.output_inter = (int*)output_inter[0];
-			s.output_intra = (int*)output_intra[0];
-/*
-			typedef struct
-			{
-				x264_t *h;
-				x264_mb_analysis_t *a;
-				x264_frame_t **frames;
-				int p0;
-				int p1;
-				int b;
-				int dist_scale_factor;
-				int *do_search;
-				const x264_weight_t *w;
-				int *output_inter;
-				int *output_intra;
-			} x264_slicetype_slice_t;
-
-*/
+            x264_slicetype_slice_t s = { h, a, frames, p0, p1, b, dist_scale_factor, do_search, w,
+                                                                 output_inter[0], output_intra[0] };
             x264_slicetype_slice_cost( &s );
         }
 
@@ -981,10 +1014,17 @@ static void x264_macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float a
     float strength = 5.0f * (1.0f - h->param.rc.f_qcompress);
     for( int mb_index = 0; mb_index < h->mb.i_mb_count; mb_index++ )
     {
+#if _USE_INV_QSCALE_
         int intra_cost = (frame->i_intra_cost[mb_index] * frame->i_inv_qscale_factor[mb_index] + 128) >> 8;
         if( intra_cost )
         {
             int propagate_cost = (frame->i_propagate_cost[mb_index] * fps_factor + 128) >> 8;
+#else
+        int intra_cost = frame->i_intra_cost[mb_index];
+        if( intra_cost )
+        {
+            int propagate_cost = frame->i_propagate_cost[mb_index];
+#endif
             float log2_ratio = x264_log2(intra_cost + propagate_cost) - x264_log2(intra_cost) + weightdelta;
             frame->f_qp_offset[mb_index] = frame->f_qp_offset_aq[mb_index] - strength * log2_ratio;
         }
@@ -1170,6 +1210,7 @@ static void x264_macroblock_tree( x264_t *h, x264_mb_analysis_t *a, x264_frame_t
 
     if( !h->param.rc.i_lookahead )
     {
+        x264_slicetype_frame_cost( h, a, frames, 0, last_nonb, last_nonb, 0 );
         x264_macroblock_tree_propagate( h, frames, average_duration, 0, last_nonb, last_nonb, 1 );
         XCHG( uint16_t*, frames[last_nonb]->i_propagate_cost, frames[0]->i_propagate_cost );
     }

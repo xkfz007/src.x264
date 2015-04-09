@@ -415,6 +415,29 @@ void x264_frame_init_lowres( x264_t *h, x264_frame_t *frame )
     memcpy( src+i_stride*i_height, src+i_stride*(i_height-1), (i_width+1) * sizeof(pixel) );
     h->mc.frame_init_lowres_core( src, frame->lowres[0], frame->lowres[1], frame->lowres[2], frame->lowres[3],
                                   i_stride, frame->i_stride_lowres, frame->i_width_lowres, frame->i_lines_lowres );
+#if 0
+	FILE*pf=fopen("lowres.txt","w");
+	pixel* src_tmp=src;
+	for(int j=0;j<i_height+1;j++){
+		for(int i=0;i<i_width+1;i++){
+			fprintf(pf,"%4d",src_tmp[i]);
+		}
+		fprintf(pf,"\n");
+		src_tmp+=i_stride;
+	}
+	pixel*dst[4]={frame->lowres[0],frame->lowres[1],frame->lowres[2],frame->lowres[3]};
+	for(int j=0;j<frame->i_lines_lowres;j++){
+		for(int k=0;k<4;k++){
+		for(int i=0;i<frame->i_width_lowres;i++){
+			fprintf(pf,"%4d",dst[k][i]);
+		}
+		fprintf(pf,"    ");
+		dst[k]+=frame->i_stride_lowres;
+		}
+		fprintf(pf,"\n");
+	}
+	fclose(pf);
+#endif
     x264_frame_expand_border_lowres( frame );
 
     memset( frame->i_cost_est, -1, sizeof(frame->i_cost_est) );
@@ -461,8 +484,12 @@ static void mbtree_propagate_cost( int *dst, uint16_t *propagate_in, uint16_t *i
     float fps = *fps_factor / 256.f;
     for( int i = 0; i < len; i++ )
     {
+#if _USE_INV_QSCALE_
         float intra_cost       = intra_costs[i] * inv_qscales[i];
         float propagate_amount = propagate_in[i] + intra_cost*fps;
+#else
+        float propagate_amount = propagate_in[i] + intra_costs[i];
+#endif
         float propagate_num    = intra_costs[i] - (inter_costs[i] & LOWRES_COST_MASK);
         float propagate_denom  = intra_costs[i];
         dst[i] = (int)(propagate_amount * propagate_num / propagate_denom + 0.5f);

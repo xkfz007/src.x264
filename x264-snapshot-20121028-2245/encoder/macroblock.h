@@ -33,7 +33,7 @@
 extern const int x264_lambda2_tab[QP_MAX_MAX+1];
 extern const uint16_t x264_lambda_tab[QP_MAX_MAX+1];
 
-extern void x264_rdo_init( void );
+void x264_rdo_init( void );
 
 int x264_macroblock_probe_skip( x264_t *h, int b_bidir );
 
@@ -42,31 +42,30 @@ int x264_macroblock_probe_skip( x264_t *h, int b_bidir );
 #define x264_macroblock_probe_bskip( h )\
     x264_macroblock_probe_skip( h, 1 )
 
-extern void x264_predict_lossless_4x4( x264_t *h, pixel *p_dst, int p, int idx, int i_mode );
-extern void x264_predict_lossless_8x8( x264_t *h, pixel *p_dst, int p, int idx, int i_mode, pixel edge[36] );
-extern void x264_predict_lossless_16x16( x264_t *h, int p, int i_mode );
-extern void x264_predict_lossless_chroma( x264_t *h, int i_mode );
+void x264_predict_lossless_4x4( x264_t *h, pixel *p_dst, int p, int idx, int i_mode );
+void x264_predict_lossless_8x8( x264_t *h, pixel *p_dst, int p, int idx, int i_mode, pixel edge[36] );
+void x264_predict_lossless_16x16( x264_t *h, int p, int i_mode );
+void x264_predict_lossless_chroma( x264_t *h, int i_mode );
 
-extern void x264_macroblock_encode      ( x264_t *h );
-extern void x264_macroblock_write_cabac ( x264_t *h, x264_cabac_t *cb );
-
+void x264_macroblock_encode      ( x264_t *h );
+void x264_macroblock_write_cabac ( x264_t *h, x264_cabac_t *cb );
 void x264_macroblock_write_cavlc ( x264_t *h );
 
-extern void x264_macroblock_encode_p8x8( x264_t *h, int i8 );
-extern void x264_macroblock_encode_p4x4( x264_t *h, int i4 );
-extern void x264_mb_encode_chroma( x264_t *h, int b_inter, int i_qp );
+void x264_macroblock_encode_p8x8( x264_t *h, int i8 );
+void x264_macroblock_encode_p4x4( x264_t *h, int i4 );
+void x264_mb_encode_chroma( x264_t *h, int b_inter, int i_qp );
 
-extern void x264_cabac_mb_skip( x264_t *h, int b_skip );
+void x264_cabac_mb_skip( x264_t *h, int b_skip );
 
-extern int x264_quant_luma_dc_trellis( x264_t *h, dctcoef *dct, int i_quant_cat, int i_qp,
+int x264_quant_luma_dc_trellis( x264_t *h, dctcoef *dct, int i_quant_cat, int i_qp,
                                 int ctx_block_cat, int b_intra, int idx );
-extern int x264_quant_chroma_dc_trellis( x264_t *h, dctcoef *dct, int i_qp, int b_intra, int idx );
-extern int x264_quant_4x4_trellis( x264_t *h, dctcoef *dct, int i_quant_cat,
+int x264_quant_chroma_dc_trellis( x264_t *h, dctcoef *dct, int i_qp, int b_intra, int idx );
+int x264_quant_4x4_trellis( x264_t *h, dctcoef *dct, int i_quant_cat,
                              int i_qp, int ctx_block_cat, int b_intra, int b_chroma, int idx );
-extern int x264_quant_8x8_trellis( x264_t *h, dctcoef *dct, int i_quant_cat,
+int x264_quant_8x8_trellis( x264_t *h, dctcoef *dct, int i_quant_cat,
                              int i_qp, int ctx_block_cat, int b_intra, int b_chroma, int idx );
 
-extern void x264_noise_reduction_update( x264_t *h );
+void x264_noise_reduction_update( x264_t *h );
 
 static ALWAYS_INLINE int x264_quant_4x4( x264_t *h, dctcoef dct[16], int i_qp, int ctx_block_cat, int b_intra, int p, int idx )
 {
@@ -150,12 +149,7 @@ static ALWAYS_INLINE void x264_mb_encode_i8x8( x264_t *h, int p, int idx, int i_
     pixel *p_src = &h->mb.pic.p_fenc[p][8*x + 8*y*FENC_STRIDE];
     pixel *p_dst = &h->mb.pic.p_fdec[p][8*x + 8*y*FDEC_STRIDE];
     ALIGNED_ARRAY_16( dctcoef, dct8x8,[64] );
-//    ALIGNED_ARRAY_32( pixel, edge_buf,[36] );
-
-	int mask = 31;
-	uint8_t edge_buf_u[sizeof(pixel[36])+31] ;
-
-	pixel* edge_buf = (pixel*)((intptr_t)(edge_buf_u+mask) & ~mask);
+    ALIGNED_ARRAY_32( pixel, edge_buf,[36] );
 
     if( b_predict )
     {

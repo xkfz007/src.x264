@@ -605,9 +605,16 @@ static int x264_validate_parameters( x264_t *h, int b_open )
         float qp_p = h->param.rc.i_qp_constant;
         float qp_i = qp_p - 6*log2f( h->param.rc.f_ip_factor );
         float qp_b = qp_p + 6*log2f( h->param.rc.f_pb_factor );
+#if CQP_VAQ
+        h->param.rc.i_qp_min = 0;
+        h->param.rc.i_qp_max = QP_MAX;
+    //    h->param.rc.i_aq_mode = 0;
+#else
         h->param.rc.i_qp_min = x264_clip3( (int)(X264_MIN3( qp_p, qp_i, qp_b )), 0, QP_MAX );
         h->param.rc.i_qp_max = x264_clip3( (int)(X264_MAX3( qp_p, qp_i, qp_b ) + .999), 0, QP_MAX );
         h->param.rc.i_aq_mode = 0;
+
+#endif
         h->param.rc.b_mb_tree = 0;
         h->param.rc.i_bitrate = 0;
     }
@@ -1094,7 +1101,157 @@ static void x264_set_aspect_ratio( x264_t *h, x264_param_t *param, int initial )
         }
     }
 }
+#if PARAM_OUT
+static void param_out(x264_param_t *param){
+fprintf(stderr,"param->i_threads=%d\n",param->i_threads);
+fprintf(stderr,"param->i_lookahead_threads=%d\n",param->i_lookahead_threads);
+fprintf(stderr,"param->b_sliced_threads=%d\n",param->b_sliced_threads);
+fprintf(stderr,"param->i_sync_lookahead=%d\n",param->i_sync_lookahead);
+fprintf(stderr,"param->b_deterministic=%d\n",param->b_deterministic);
+fprintf(stderr,"param->i_csp=");
+switch(param->i_csp){
+case X264_CSP_I420:
+	fprintf(stderr,"X264_CSP_I420\n");
+	break;
+case X264_CSP_NV12:
+	fprintf(stderr,"X264_CSP_NV12\n");
+	break;
+case X264_CSP_YV12:
+	fprintf(stderr,"X264_CSP_YV12\n");
+	break;
+default:
+	fprintf(stderr,"X264_CHROMA_FORMAT\n");
+}
+fprintf(stderr,"param->i_width=%d\n",param->i_width);
+fprintf(stderr,"param->i_height=%d\n",param->i_height);
+fprintf(stderr,"param->i_fps_num=%d\n",param->i_fps_num);
+fprintf(stderr,"param->i_fps_den=%d\n",param->i_fps_den);
+    fprintf(stderr,"param->i_level_idc=%d\n",param->i_level_idc);
+    fprintf(stderr,"param->i_slice_max_size=%d\n",param->i_slice_max_size);
+    fprintf(stderr,"param->i_slice_max_mbs=%d\n",param->i_slice_max_mbs);
+    fprintf(stderr,"param->i_slice_count=%d\n",param->i_slice_count);
+	fprintf(stderr,"param->i_frame_reference=%d\n",param->i_frame_reference);
+	fprintf(stderr,"param->i_keyint_max=%d\n",param->i_keyint_max);
+	fprintf(stderr,"param->i_keyint_min=%d\n",param->i_keyint_min);
+	fprintf(stderr,"param->i_bframe=%d\n",param->i_bframe);
+	fprintf(stderr,"param->i_scenecut_threshold=%d\n",param->i_scenecut_threshold);
+	fprintf(stderr,"param->i_bframe_adaptive=");
+	switch(param->i_bframe_adaptive){
+	case X264_B_ADAPT_TRELLIS:
+		fprintf(stderr,"X264_B_ADAPT_TRELLIS(2)\n");
+		break;
+	case X264_B_ADAPT_FAST:
+		fprintf(stderr,"X264_B_ADAPT_FAST(1)\n");
+		break;
+	default:
+		fprintf(stderr,"X264_B_ADAPT_NONE(0)\n");
+	}
 
+	fprintf(stderr,"param->i_bframe_pyramid=");
+	switch(param->i_bframe_pyramid){
+	case X264_B_PYRAMID_NORMAL:
+		fprintf(stderr,"X264_B_PYRAMID_NORMAL(2)\n");
+		break;
+	case X264_B_PYRAMID_STRICT:
+		fprintf(stderr,"X264_B_PYRAMID_STRICT(1)\n");
+		break;
+	default:
+		fprintf(stderr,"X264_B_PYRAMID_NONE(0)\n");
+		break;
+	}
+
+    fprintf(stderr,"param->rc.i_rc_method =");
+	switch(param->rc.i_rc_method){
+	case X264_RC_ABR:
+		fprintf(stderr,"X264_RC_ABR\n");
+		break;
+	case X264_RC_CRF:
+		fprintf(stderr,"X264_RC_CRF\n");
+		break;
+	default:
+		fprintf(stderr,"X264_RC_CQP\n");
+	}
+    fprintf(stderr,"param->rc.i_bitrate =%d\n",param->rc.i_bitrate);
+    fprintf(stderr,"param->rc.f_rate_tolerance =%f\n",param->rc.f_rate_tolerance);
+    fprintf(stderr,"param->rc.i_vbv_max_bitrate =%d\n",param->rc.i_vbv_max_bitrate);
+    fprintf(stderr,"param->rc.i_vbv_buffer_size =%d\n",param->rc.i_vbv_buffer_size);
+    fprintf(stderr,"param->rc.f_vbv_buffer_init =%f\n",param->rc.f_vbv_buffer_init);
+    fprintf(stderr,"param->rc.i_qp_constant =%d\n",param->rc.i_qp_constant);
+    fprintf(stderr,"param->rc.f_rf_constant =%f\n",param->rc.f_rf_constant);
+    fprintf(stderr,"param->rc.i_qp_min =%d\n",param->rc.i_qp_min);
+    fprintf(stderr,"param->rc.i_qp_max =%d\n",param->rc.i_qp_max);
+    fprintf(stderr,"param->rc.i_qp_step =%d\n",param->rc.i_qp_step);
+    fprintf(stderr,"param->rc.f_ip_factor =%f\n",param->rc.f_ip_factor);
+    fprintf(stderr,"param->rc.f_pb_factor =%f\n",param->rc.f_pb_factor);
+    fprintf(stderr,"param->rc.i_aq_mode =");
+	switch(param->rc.i_aq_mode){
+	case X264_AQ_AUTOVARIANCE:
+		fprintf(stderr,"X264_AQ_AUTOVARIANCE(2)\n");
+		break;
+	case X264_AQ_VARIANCE:
+		fprintf(stderr,"X264_AQ_VARIANCE(1)\n");
+		break;
+	default:
+		fprintf(stderr,"X264_AQ_NONE(0)\n");
+	}
+    fprintf(stderr,"param->rc.f_aq_strength =%f\n",param->rc.f_aq_strength);
+    fprintf(stderr,"param->rc.i_lookahead =%d\n",param->rc.i_lookahead);
+
+    fprintf(stderr,"param->rc.b_stat_write =%d\n",param->rc.b_stat_write);
+    fprintf(stderr,"param->rc.psz_stat_out =%s\n",param->rc.psz_stat_out);
+    fprintf(stderr,"param->rc.b_stat_read =%d\n",param->rc.b_stat_read);
+    fprintf(stderr,"param->rc.psz_stat_in =%s\n",param->rc.psz_stat_in);
+    fprintf(stderr,"param->rc.f_qcompress =%f\n",param->rc.f_qcompress);
+    fprintf(stderr,"param->rc.f_qblur =%f\n",param->rc.f_qblur);
+    fprintf(stderr,"param->rc.f_complexity_blur =%f\n",param->rc.f_complexity_blur);
+    fprintf(stderr,"param->rc.i_zones =%d\n",param->rc.i_zones);
+	fprintf(stderr,"param->rc.b_mb_tree =%d\n",param->rc.b_mb_tree);
+	fprintf(stderr,"param->analyse.intra=");
+	if(param->analyse.intra&X264_ANALYSE_I4x4)
+		fprintf(stderr,"I4x4,");
+	if(param->analyse.intra&X264_ANALYSE_I8x8)
+		fprintf(stderr,"I8x8,");
+	fprintf(stderr,"\n");
+
+	fprintf(stderr,"param->analyse.inter=");
+	if(param->analyse.inter&X264_ANALYSE_I4x4)
+		fprintf(stderr,"I4x4,");
+	if(param->analyse.inter&X264_ANALYSE_I8x8)
+		fprintf(stderr,"I8x8,");
+	if(param->analyse.inter&X264_ANALYSE_PSUB16x16)
+		fprintf(stderr,"P16x16,P16x8,P8x16,P8x8,");
+	if(param->analyse.inter&X264_ANALYSE_PSUB8x8)
+		fprintf(stderr,"P8x4,P4x8,P4x4,");
+	if(param->analyse.inter&X264_ANALYSE_BSUB16x16)
+		fprintf(stderr,"B16x16,B16x8,B8x16,B8x8,");
+	fprintf(stderr,"\n");
+
+	fprintf(stderr,"param->analyse.i_direct_mv_pred =%d\n",param->analyse.i_direct_mv_pred);
+	fprintf(stderr,"param->analyse.i_me_range =%d\n",param->analyse.i_me_range);
+	fprintf(stderr,"param->analyse.i_subpel_refine =%d\n",param->analyse.i_subpel_refine);
+	fprintf(stderr,"param->analyse.b_mixed_references =%d\n",param->analyse.b_mixed_references);
+	fprintf(stderr,"param->analyse.b_chroma_me =%d\n",param->analyse.b_chroma_me);
+	fprintf(stderr,"param->analyse.b_fast_pskip =%d\n",param->analyse.b_fast_pskip);
+	fprintf(stderr,"param->analyse.b_transform_8x8 =%d\n",param->analyse.b_transform_8x8);
+	fprintf(stderr,"param->analyse.i_trellis =%d\n",param->analyse.i_trellis);
+	fprintf(stderr,"param->analyse.b_psnr =%d\n",param->analyse.b_psnr);
+	fprintf(stderr,"param->analyse.b_ssim =%d\n",param->analyse.b_ssim);
+	fprintf(stderr,"param->analyse.i_weighted_pred =");
+	switch(param->analyse.i_weighted_pred ){
+	case X264_WEIGHTP_NONE:
+		fprintf(stderr,"X264_WEIGHTP_NONE(0)\n");
+		break;
+	case X264_WEIGHTP_SIMPLE:
+		fprintf(stderr,"X264_WEIGHTP_SIMPLE(1)\n");
+		break;
+	case X264_WEIGHTP_SMART:
+		fprintf(stderr,"X264_WEIGHTP_SMART(2)\n");
+		break;
+	}
+	fflush(stderr);
+}
+
+#endif
 /****************************************************************************
  * x264_encoder_open:
  ****************************************************************************/
@@ -1121,6 +1278,10 @@ x264_t *x264_encoder_open( x264_param_t *param )
 
     if( x264_validate_parameters( h, 1 ) < 0 )
         goto fail;
+
+#if PARAM_OUT
+	param_out(&h->param);
+#endif
 
     if( h->param.psz_cqm_file )
         if( x264_cqm_parse_file( h, h->param.psz_cqm_file ) < 0 )
@@ -3318,6 +3479,19 @@ static int x264_encoder_frame_end( x264_t *h, x264_t *thread_current,
         pic_out->img.i_stride[i] = h->fdec->i_stride[i] * sizeof(pixel);
         pic_out->img.plane[i] = (uint8_t*)h->fdec->plane[i];
     }
+#if SSIM_FRAME
+ if( h->param.analyse.b_ssim ){
+			h->stat.frame.f_ssim_y2=x264_ssim2( h->fdec->plane[0],h->fdec->i_stride[0],
+				h->fenc->plane[0],h->fenc->i_stride[0], h->param.i_width,h->param.i_height);
+			float ssim_u,ssim_v;
+			x264_ssim_nv( h->fdec->plane[1],h->fdec->i_stride[1],
+				h->fenc->plane[1],h->fenc->i_stride[1], h->param.i_width,h->param.i_height/2,&ssim_u,&ssim_v);
+			h->stat.frame.f_ssim_u2=ssim_u;
+			h->stat.frame.f_ssim_v2=ssim_v;
+		//	h->stat.frame.f_ssim_v2+=x264_ssim2( h->fdec->plane[2]+h->fdec->i_stride[2],h->fdec->i_stride[2],
+		//		h->fenc->plane[2]+h->fenc->i_stride[2],h->fenc->i_stride[2], h->param.i_width/2,h->param.i_height/2);
+ }
+#endif
 
     x264_frame_push_unused( thread_current, h->fenc );
 
@@ -3444,6 +3618,15 @@ static int x264_encoder_frame_end( x264_t *h, x264_t *thread_current,
         h->stat.f_ssim_mean_y[h->sh.i_type] += pic_out->prop.f_ssim * dur;
         snprintf( psz_message + strlen(psz_message), 80 - strlen(psz_message),
                   " SSIM Y:%.5f", pic_out->prop.f_ssim );
+#if SSIM_FRAME
+        h->stat.f_ssim_mean_y2[h->sh.i_type] += h->stat.frame.f_ssim_y2 * dur;
+        h->stat.f_ssim_mean_u2[h->sh.i_type] += h->stat.frame.f_ssim_u2 * dur;
+        h->stat.f_ssim_mean_v2[h->sh.i_type] += h->stat.frame.f_ssim_v2 * dur;
+
+        snprintf( psz_message + strlen(psz_message), 80 - strlen(psz_message),
+                  " SSIM Y:%.4f U:%.4f V:%.4f", h->stat.frame.f_ssim_y2,
+				  h->stat.frame.f_ssim_u2,h->stat.frame.f_ssim_v2);
+#endif
     }
     psz_message[79] = '\0';
 
@@ -3792,6 +3975,13 @@ void    x264_encoder_close  ( x264_t *h )
         {
             float ssim = SUM3( h->stat.f_ssim_mean_y ) / duration;
             x264_log( h, X264_LOG_INFO, "SSIM Mean Y:%.7f (%6.3fdb)\n", ssim, x264_ssim( ssim ) );
+#if SSIM_FRAME
+            float ssimy = SUM3( h->stat.f_ssim_mean_y2 ) / duration;
+            float ssimu = SUM3( h->stat.f_ssim_mean_u2 ) / duration;
+            float ssimv = SUM3( h->stat.f_ssim_mean_v2 ) / duration;
+            x264_log( h, X264_LOG_INFO, "SSIM Mean Y:%.7f (%6.3fdb) U:%.7f (%6.3fdb) V:%.7f (%6.3fdb)\n", 
+				ssimy, x264_ssim( ssimy ) , ssimu, x264_ssim( ssimu ), ssimv, x264_ssim( ssimv ));
+#endif
         }
         if( h->param.analyse.b_psnr )
         {

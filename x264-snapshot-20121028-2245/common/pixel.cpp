@@ -653,21 +653,18 @@ float x264_pixel_ssim_wxh( x264_pixel_function_t *pf,
 {
     int z = 0;
     float ssim = 0.0;
-    int (*sum0)[4] = (int (*)[4])buf;
-    int (*sum1)[4] = (int (*)[4])sum0 + (width >> 2) + 3;
+	typedef int(*p_arr)[4];
+    //int (*sum0)[4] = (int (*)[4])buf;
+    //int (*sum1)[4] = (int (*)[4])sum0 + (width >> 2) + 3;
+    p_arr sum0 = (p_arr)buf;
+    p_arr sum1 = (p_arr)sum0 + (width >> 2) + 3;
     width >>= 2;
     height >>= 2;
     for( int y = 1; y < height; y++ )
     {
         for( ; z <= y; z++ )
         {
-//            XCHG(int (*)[4], sum0, sum1 );
-			do{ 
-				int (*t)[4] = sum0; 
-				sum0 = sum1; 
-				sum1 = t; 
-			} while(0);
-
+            XCHG( p_arr, sum0, sum1 );
             for( int x = 0; x < width; x+=2 )
                 pf->ssim_4x4x2_core( &pix1[4*(x+z*stride1)], stride1, &pix2[4*(x+z*stride2)], stride2, &sum0[x] );
         }
@@ -677,7 +674,188 @@ float x264_pixel_ssim_wxh( x264_pixel_function_t *pf,
     *cnt = (height-1) * (width-1);
     return ssim;
 }
+#if SSIM_FRAME
+float x264_ssim2( uint8_t* pic_r, uint32_t stride_r,
+					   uint8_t* pic_i, uint32_t stride_i,
+					   uint32_t width,uint32_t height )
+{
+static const double K1 = 0.01f, K2 = 0.03f;
+	static const int win_width=8,win_height=8;
+	double max_pix_value_sqd;
+	double C1, C2;
 
+	double win_uint8_ts = (double) (win_width * win_height);
+	double win_uint8_ts_bias = win_uint8_ts;
+
+	double mb_ssim, mean_i, mean_r;
+	double var_i, var_r, cov_ir;
+	int imean_i, imean_r, ivar_i, ivar_r, icov_ir;
+	double cur_distortion = 0.0;
+	int i, j, n, m, win_cnt = 0;
+	int overlapSize = 8;
+	uint8_t* p_i,*p_r;
+
+	max_pix_value_sqd = ((1<<X264_BIT_DEPTH)-1)*((1<<X264_BIT_DEPTH)-1);
+	C1 = K1 * K1 * max_pix_value_sqd;
+	C2 = K2 * K2 * max_pix_value_sqd;
+
+	for(j = 0; j <= height-win_height; j+=overlapSize) {
+		for(i = 0; i <= width-win_width; i+=overlapSize) {
+
+			imean_i = 0;
+			imean_r = 0; 
+			ivar_i  = 0;
+			ivar_r  = 0;
+			icov_ir = 0;
+
+			p_i=pic_i+i;
+			p_r=pic_r+i;
+
+			for ( n = 0;n < 0 + win_height;n ++)
+			{
+				for (m = 0;m < 0 + win_width;m ++)
+				{
+					uint8_t px_i=*(p_i+m);
+					uint8_t px_r=*(p_r+m);
+					imean_i   += px_i;
+					imean_r   += px_r;
+					ivar_i    += px_i*px_i;
+					ivar_r    += px_r*px_r;
+					icov_ir += px_i * px_r;
+				}
+				p_i+=stride_i;
+				p_r+=stride_r;
+			}
+
+			mean_i = (double) imean_i / win_uint8_ts;
+			mean_r = (double) imean_r / win_uint8_ts;
+
+			var_i    = ((double) ivar_i - ((double) imean_i) * mean_i) / win_uint8_ts_bias;
+			var_r    = ((double) ivar_r - ((double) imean_r) * mean_r) / win_uint8_ts_bias;
+			cov_ir = ((double) icov_ir - ((double) imean_i) * mean_r) / win_uint8_ts_bias;
+
+			mb_ssim  = (double) ((2.0 * mean_i * mean_r + C1) * (2.0 * cov_ir + C2));
+			mb_ssim /= (double) (mean_i * mean_i + mean_r * mean_r + C1) * (var_i + var_r + C2);
+
+			cur_distortion += mb_ssim;
+			win_cnt++;
+
+		}
+		pic_i += overlapSize*stride_i;
+		pic_r += overlapSize*stride_r;
+	}
+	cur_distortion /= (double) win_cnt;
+
+	if (cur_distortion >= 1.0 && cur_distortion < 1.01) // avoid double accuracy problem at very low QP(e.g.2)
+		cur_distortion = 1.0;
+
+	return cur_distortion;
+}
+void x264_ssim_nv( uint8_t* pic_r, uint32_t stride_r,
+					   uint8_t* pic_i, uint32_t stride_i,
+					   uint32_t width,uint32_t height,float*ssim_u,float*ssim_v)
+{
+static const double K1 = 0.01f, K2 = 0.03f;
+	static const int win_width=8,win_height=8;
+	double max_pix_value_sqd;
+	double C1, C2;
+
+	double win_uint8_ts = (double) (win_width * win_height);
+	double win_uint8_ts_bias = win_uint8_ts;
+
+	double mb_ssim[2], mean_i[2], mean_r[2];
+	double var_i[2], var_r[2], cov_ir[2];
+	int imean_i[2], imean_r[2], ivar_i[2], ivar_r[2], icov_ir[2];
+	double cur_distortion[2] = {0.0};
+	int i, j, n, m, win_cnt = 0;
+	int overlapSize = 8;
+	uint8_t* p_i[2],*p_r[2];
+
+	max_pix_value_sqd = ((1<<X264_BIT_DEPTH)-1)*((1<<X264_BIT_DEPTH)-1);
+	C1 = K1 * K1 * max_pix_value_sqd;
+	C2 = K2 * K2 * max_pix_value_sqd;
+
+	for(j = 0; j <= height-win_height; j+=overlapSize) {
+		for(i = 0; i <= width-win_width; i+=overlapSize) {
+
+			imean_i[0] = 0;
+			imean_r[0] = 0; 
+			ivar_i[0]  = 0;
+			ivar_r[0]  = 0;
+			icov_ir[0] = 0;
+
+			imean_i[1] = 0;
+			imean_r[1] = 0; 
+			ivar_i[1]  = 0;
+			ivar_r[1]  = 0;
+			icov_ir[1] = 0;
+
+			p_i[0]=pic_i+2*i;
+			p_r[0]=pic_r+2*i;
+			p_i[1]=pic_i+2*i+1;
+			p_r[1]=pic_r+2*i+1;
+
+			for ( n = 0;n < 0 + win_height;n ++)
+			{
+				for (m = 0;m < 0 + win_width;m ++)
+				{
+					uint8_t px_i[2],px_r[2];
+					px_i[0]=*(p_i[0]+2*m);
+					px_r[0]=*(p_r[0]+2*m);
+					imean_i[0]   += px_i[0];
+					imean_r[0]   += px_r[0];
+					ivar_i[0]    += px_i[0]*px_i[0];
+					ivar_r [0]   += px_r[0]*px_r[0];
+					icov_ir[0] += px_i[0] * px_r[0];
+
+					px_i[1]=*(p_i[1]+2*m);
+					px_r[1]=*(p_r[1]+2*m);
+					imean_i[1]   += px_i[1];
+					imean_r[1]   += px_r[1];
+					ivar_i[1]    += px_i[1]*px_i[1];
+					ivar_r [1]   += px_r[1]*px_r[1];
+					icov_ir[1] += px_i[1] * px_r[1];
+				}
+				p_i[0]+=stride_i;
+				p_r[0]+=stride_r;
+			}
+
+			mean_i[0] = (double) imean_i[0] / win_uint8_ts;
+			mean_r[0] = (double) imean_r[0] / win_uint8_ts;
+			var_i[0]    = ((double) ivar_i[0] - ((double) imean_i[0]) * mean_i[0]) / win_uint8_ts_bias;
+			var_r[0]    = ((double) ivar_r[0] - ((double) imean_r[0]) * mean_r[0]) / win_uint8_ts_bias;
+			cov_ir[0] = ((double) icov_ir[0] - ((double) imean_i[0]) * mean_r[0]) / win_uint8_ts_bias;
+			mb_ssim[0]  = (double) ((2.0 * mean_i[0] * mean_r[0] + C1) * (2.0 * cov_ir[0] + C2));
+			mb_ssim[0] /= (double) (mean_i[0] * mean_i[0] + mean_r[0] * mean_r[0] + C1) * (var_i[0] + var_r[0] + C2);
+			cur_distortion[0] += mb_ssim[0];
+
+			mean_i[1] = (double) imean_i[1] / win_uint8_ts;
+			mean_r[1] = (double) imean_r[1] / win_uint8_ts;
+			var_i[1]    = ((double) ivar_i[1] - ((double) imean_i[1]) * mean_i[1]) / win_uint8_ts_bias;
+			var_r[1]    = ((double) ivar_r[1] - ((double) imean_r[1]) * mean_r[1]) / win_uint8_ts_bias;
+			cov_ir[1] = ((double) icov_ir[1] - ((double) imean_i[1]) * mean_r[1]) / win_uint8_ts_bias;
+			mb_ssim[1]  = (double) ((2.0 * mean_i[1] * mean_r[1] + C1) * (2.0 * cov_ir[1] + C2));
+			mb_ssim[1] /= (double) (mean_i[1] * mean_i[1] + mean_r[1] * mean_r[1] + C1) * (var_i[1] + var_r[1] + C2);
+			cur_distortion[1] += mb_ssim[1];
+
+			win_cnt++;
+
+		}
+		pic_i += overlapSize*stride_i;
+		pic_r += overlapSize*stride_r;
+	}
+	cur_distortion[0] /= (double) win_cnt;
+	cur_distortion[1] /= (double) win_cnt;
+
+	if (cur_distortion[0] >= 1.0 && cur_distortion[0] < 1.01) // avoid double accuracy problem at very low QP(e.g.2)
+		cur_distortion[0] = 1.0;
+	if (cur_distortion[1] >= 1.0 && cur_distortion[1] < 1.01) // avoid double accuracy problem at very low QP(e.g.2)
+		cur_distortion[1] = 1.0;
+
+	*ssim_u=cur_distortion[0];
+	*ssim_v=cur_distortion[1];
+}
+#endif
 static int pixel_vsad( pixel *src, intptr_t stride, int height )
 {
     int score = 0;

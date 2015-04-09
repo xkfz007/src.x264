@@ -691,7 +691,7 @@ static const uint16_t coeff_abs_level_m1_offset[14] =
 {
     227+0, 227+10, 227+20, 227+30, 227+39, 426, 952+0, 952+10, 952+20, 708, 982+0, 982+10, 982+20, 766
 };
-//#if RDO_SKIP_BS //TODOTODOTODO //YAC
+#if 1//RDO_SKIP_BS
 //extern const uint8_t x264_significant_coeff_flag_offset_8x8[2][63];
 //extern const uint8_t x264_last_coeff_flag_offset_8x8[63];
 //extern const uint8_t x264_coeff_flag_offset_chroma_422_dc[7];
@@ -716,7 +716,7 @@ const uint8_t x264_last_coeff_flag_offset_8x8[63] =
     5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8
 };
 const uint8_t x264_coeff_flag_offset_chroma_422_dc[7] = { 0, 0, 1, 1, 2, 2, 2 }; /* MIN( i/2, 2 ) */
-//#endif
+#endif
 
 // node ctx: 0..3: abslevel1 (with abslevelgt1 == 0).
 //           4..7: abslevelgt1 + 3 (and abslevel1 doesn't matter).

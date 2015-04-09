@@ -118,7 +118,7 @@ void x264_param_default( x264_param_t *param )
     param->rc.f_qblur = 0.5;
     param->rc.f_complexity_blur = 20;
     param->rc.i_zones = 0;
-	param->rc.b_mb_tree = 0;
+	param->rc.b_mb_tree = 1;
 
    // param->rc.b_mb_tree = 1;
 
@@ -1087,6 +1087,7 @@ static void x264_log_default( void *p_unused, int i_level, const char *psz_fmt, 
     }
     fprintf( stderr, "x264 [%s]: ", psz_prefix );
     vfprintf( stderr, psz_fmt, arg );
+	fflush(stderr);
 }
 
 /****************************************************************************

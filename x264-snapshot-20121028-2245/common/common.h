@@ -26,6 +26,10 @@
 
 #ifndef X264_COMMON_H
 #define X264_COMMON_H
+#define SSIM_FRAME 1
+#define CQP_VAQ 0
+#define PARAM_OUT 1
+#define _USE_INV_QSCALE_ 0
 
 /****************************************************************************
  * Macros
@@ -92,7 +96,6 @@ do {\
 #include <string.h>
 #include <assert.h>
 #include <limits.h>
-#include "common/common_common.h"
 
 #if HAVE_INTERLACED
 #   define MB_INTERLACED h->mb.b_interlaced
@@ -122,7 +125,6 @@ do {\
  * Mn: load or store n bits, aligned, native-endian
  * CPn: copy n bits, aligned, native-endian
  * we don't use memcpy for CPn because memcpy's args aren't assumed to be aligned */
-/*
 typedef union { uint16_t i; uint8_t  c[2]; } MAY_ALIAS x264_union16_t;
 typedef union { uint32_t i; uint16_t b[2]; uint8_t  c[4]; } MAY_ALIAS x264_union32_t;
 typedef union { uint64_t i; uint32_t a[2]; uint16_t b[4]; uint8_t c[8]; } MAY_ALIAS x264_union64_t;
@@ -132,19 +134,34 @@ typedef union { x264_uint128_t i; uint64_t a[2]; uint32_t b[4]; uint16_t c[8]; u
 #define M32(src) (((x264_union32_t*)(src))->i)
 #define M64(src) (((x264_union64_t*)(src))->i)
 #define M128(src) (((x264_union128_t*)(src))->i)
-*/
 //#define M128_ZERO ((x264_uint128_t){{0,0}})
+#define CP16(dst,src) M16(dst) = M16(src)
+#define CP32(dst,src) M32(dst) = M32(src)
+#define CP64(dst,src) M64(dst) = M64(src)
+#define CP128(dst,src) M128(dst) = M128(src)
 static inline x264_uint128_t M128_ZERO()  //TODO
 {
 	x264_uint128_t X = {{0,0}};
 	return X;
 }
-//#define M128_ZERO ({{0,0}}) //TODO
-#define CP16(dst,src) M16(dst) = M16(src)
-#define CP32(dst,src) M32(dst) = M32(src)
-#define CP64(dst,src) M64(dst) = M64(src)
-#define CP128(dst,src) M128(dst) = M128(src)
 
+#if HIGH_BIT_DEPTH
+    typedef uint16_t pixel;
+    typedef uint64_t pixel4;
+    typedef int32_t  dctcoef;
+    typedef uint32_t udctcoef;
+
+#   define PIXEL_SPLAT_X4(x) ((x)*0x0001000100010001ULL)
+#   define MPIXEL_X4(src) M64(src)
+#else
+    typedef uint8_t  pixel;
+    typedef uint32_t pixel4;
+    typedef int16_t  dctcoef;
+    typedef uint16_t udctcoef;
+
+#   define PIXEL_SPLAT_X4(x) ((x)*0x01010101U)
+#   define MPIXEL_X4(src) M32(src)
+#endif
 
 #define BIT_DEPTH X264_BIT_DEPTH
 
@@ -345,17 +362,6 @@ enum sei_payload_type_e
 
 typedef struct
 {
-	int     i_type;
-	int     i_partition;
-	int     i_sub_partition[4];
-	int     i_intra16x16_pred_mode;
-	int     intra4x4_pred_mode[4][4];
-	int8_t  ref[2][4][4];                  /* [list][y][x] */
-	int16_t mv[2][4][4][2];                /* [list][y][x][mvxy] */
-} visualize_t; //TODO
-
-typedef struct
-{
     x264_sps_t *sps;
     x264_pps_t *pps;
 
@@ -468,18 +474,13 @@ typedef struct
     /* Metrics */
     int64_t i_ssd[3];
     double f_ssim;
+#if SSIM_FRAME
+	double f_ssim_y2;
+	double f_ssim_u2;
+	double f_ssim_v2;
+#endif
     int i_ssim_cnt;
 } x264_frame_stat_t;
-
-typedef struct
-{
-	int         i_nal;
-	int         i_nals_allocated;
-	x264_nal_t  *nal;
-	int         i_bitstream;    /* size of p_bitstream */
-	uint8_t     *p_bitstream;   /* will hold data for all nal */
-	bs_t        bs;
-} struct_out;
 
 struct x264_t
 {
@@ -500,7 +501,6 @@ struct x264_t
     x264_pthread_cond_t cv;
 
     /* bitstream output */
-#if 0
     struct
     {
         int         i_nal;
@@ -510,8 +510,7 @@ struct x264_t
         uint8_t     *p_bitstream;   /* will hold data for all nal */
         bs_t        bs;
     } out;
-#endif
-	struct_out out;
+
     uint8_t *nal_buffer;
     int      nal_buffer_size;
 
@@ -907,6 +906,11 @@ struct x264_t
         double  f_psnr_mean_u[3];
         double  f_psnr_mean_v[3];
         double  f_ssim_mean_y[3];
+#if SSIM_FRAME
+        double  f_ssim_mean_y2[3];
+		double  f_ssim_mean_u2[3];
+		double  f_ssim_mean_v2[3];
+#endif
         double  f_frame_duration[3];
         /* */
         int64_t i_mb_count[3][19];
@@ -977,111 +981,6 @@ struct x264_t
 #endif
 
 #include "rectangle.h"
-
-// Moved from analyse.cpp
-#include "encoder/me.h"
-typedef struct
-{
-	/* 16x16 */
-	int       i_rd16x16;
-	x264_me_t me16x16;
-	x264_me_t bi16x16;      /* for b16x16 BI mode, since MVs can differ from l0/l1 */
-
-	/* 8x8 */
-	int       i_cost8x8;
-	/* [ref][0] is 16x16 mv, [ref][1..4] are 8x8 mv from partition [0..3] */
-	ALIGNED_4( int16_t mvc[32][5][2] );
-	x264_me_t me8x8[4];
-
-	/* Sub 4x4 */
-	int       i_cost4x4[4]; /* cost per 8x8 partition */
-	x264_me_t me4x4[4][4];
-
-	/* Sub 8x4 */
-	int       i_cost8x4[4]; /* cost per 8x8 partition */
-	x264_me_t me8x4[4][2];
-
-	/* Sub 4x8 */
-	int       i_cost4x8[4]; /* cost per 8x8 partition */
-	x264_me_t me4x8[4][2];
-
-	/* 16x8 */
-	int       i_cost16x8;
-	x264_me_t me16x8[2];
-
-	/* 8x16 */
-	int       i_cost8x16;
-	x264_me_t me8x16[2];
-
-} x264_mb_analysis_list_t;
-
-typedef struct
-{
-	/* conduct the analysis using this lamda and QP */
-	int i_lambda;
-	int i_lambda2;
-	int i_qp;
-	uint16_t *p_cost_mv;
-	uint16_t *p_cost_ref[2];
-	int i_mbrd;
-
-
-	/* I: Intra part */
-	/* Take some shortcuts in intra search if intra is deemed unlikely */
-	int b_fast_intra;
-	int b_force_intra; /* For Periodic Intra Refresh.  Only supported in P-frames. */
-	int b_avoid_topright; /* For Periodic Intra Refresh: don't predict from top-right pixels. */
-	int b_try_skip;
-
-	/* Luma part */
-	int i_satd_i16x16;
-	int i_satd_i16x16_dir[7];
-	int i_predict16x16;
-
-	int i_satd_i8x8;
-	int i_cbp_i8x8_luma;
-	ALIGNED_16( uint16_t i_satd_i8x8_dir[4][16] );
-	int i_predict8x8[4];
-
-	int i_satd_i4x4;
-	int i_predict4x4[16];
-
-	int i_satd_pcm;
-
-	/* Chroma part */
-	int i_satd_chroma;
-	int i_satd_chroma_dir[7];
-	int i_predict8x8chroma;
-
-	/* II: Inter part P/B frame */
-	x264_mb_analysis_list_t l0;
-	x264_mb_analysis_list_t l1;
-
-	int i_cost16x16bi; /* used the same ref and mv as l0 and l1 (at least for now) */
-	int i_cost16x16direct;
-	int i_cost8x8bi;
-	int i_cost8x8direct[4];
-	int i_satd8x8[3][4]; 		/* [L0,L1,BI][8x8 0..3] SATD only */
-	int i_cost_est16x8[2]; 		/* Per-partition estimated cost */
-	int i_cost_est8x16[2];
-	int i_cost16x8bi;
-	int i_cost8x16bi;
-	int i_rd16x16bi;
-	int i_rd16x16direct;
-	int i_rd16x8bi;
-	int i_rd8x16bi;
-	int i_rd8x8bi;
-
-	int i_mb_partition16x8[2]; 	/* mb_partition_e */
-	int i_mb_partition8x16[2];
-	int i_mb_type16x8; 			/* mb_class_e */
-	int i_mb_type8x16;
-
-	int b_direct_available;
-	int b_early_terminate;
-
-} x264_mb_analysis_t;
-///////////////////////////////
 
 #endif
 
