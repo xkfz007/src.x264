@@ -58,7 +58,7 @@ typedef struct x264_frame
     int     b_keyframe;
     uint8_t b_fdec;
     uint8_t b_last_minigop_bframe; /* this frame is the last b in a sequence of bframes */
-    uint8_t i_bframes;   /* number of bframes following this nonb in coded order */
+    uint8_t i_bframes_after_nonb;   /* number of bframes following this nonb in coded order */
     float   f_qp_avg_rc; /* QPs as decided by ratecontrol */
     float   f_qp_avg_aq; /* QPs as decided by AQ in addition to ratecontrol */
     float   f_crf_avg;   /* Average effective CRF for this frame */

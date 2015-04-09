@@ -1475,7 +1475,7 @@ void x264_ratecontrol_start( x264_t *h, int i_force_qp, int overhead )
     }
 
     if( h->sh.i_type != SLICE_TYPE_B )
-        rc->bframes = h->fenc->i_bframes;
+        rc->bframes = h->fenc->i_bframes_after_nonb;
 
     if( rc->b_abr )
     {

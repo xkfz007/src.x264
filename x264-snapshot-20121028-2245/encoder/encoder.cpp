@@ -3581,7 +3581,7 @@ static int x264_encoder_frame_end( x264_t *h, x264_t *thread_current,
         }
     }
     else
-        h->stat.i_consecutive_bframes[h->fenc->i_bframes]++;
+        h->stat.i_consecutive_bframes[h->fenc->i_bframes_after_nonb]++;
 
     psz_message[0] = '\0';
     double dur = h->fenc->f_duration;

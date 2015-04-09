@@ -431,7 +431,7 @@ typedef struct x264_lookahead_t
     uint8_t                       b_analyse_keyframe;
     int                           i_last_keyframe;
     int                           i_slicetype_length;
-    x264_frame_t                  *last_nonb;
+    x264_frame_t                  *last_nonb_frm;
     x264_pthread_t                thread_handle;
     x264_sync_frame_list_t        ifbuf;
     x264_sync_frame_list_t        next;

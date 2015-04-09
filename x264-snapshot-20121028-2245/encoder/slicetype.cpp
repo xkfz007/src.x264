@@ -1493,9 +1493,9 @@ void x264_slicetype_analyse( x264_t *h, int keyframe )
 
     assert( h->frames.b_have_lowres );
 
-    if( !h->lookahead->last_nonb )
+    if( !h->lookahead->last_nonb_frm )
         return;
-    frames[0] = h->lookahead->last_nonb;
+    frames[0] = h->lookahead->last_nonb_frm;
     for( framecnt = 0; framecnt < i_max_search && h->lookahead->next.list[framecnt]->i_type == X264_TYPE_AUTO; framecnt++ )
         frames[framecnt+1] = h->lookahead->next.list[framecnt];
 
@@ -1784,7 +1784,7 @@ void x264_slicetype_decide( x264_t *h )
 
     if( bframes )
         h->lookahead->next.list[bframes-1]->b_last_minigop_bframe = 1;
-    h->lookahead->next.list[bframes]->i_bframes = bframes;
+    h->lookahead->next.list[bframes]->i_bframes_after_nonb = bframes;
 
     /* insert a bref into the sequence */
     if( h->param.i_bframe_pyramid && bframes > 1 && !brefs )
@@ -1802,7 +1802,7 @@ void x264_slicetype_decide( x264_t *h )
 
         x264_lowres_context_init( h, &a );
 
-        frames[0] = h->lookahead->last_nonb;
+        frames[0] = h->lookahead->last_nonb_frm;
         memcpy( &frames[1], h->lookahead->next.list, (bframes+1) * sizeof(x264_frame_t*) );
         if( IS_X264_TYPE_I( h->lookahead->next.list[bframes]->i_type ) )
             p0 = bframes + 1;
@@ -1837,7 +1837,7 @@ void x264_slicetype_decide( x264_t *h )
         && h->param.analyse.i_weighted_pred >= X264_WEIGHTP_SIMPLE )
     {
         x264_emms();
-        x264_weights_analyse( h, h->lookahead->next.list[bframes], h->lookahead->last_nonb, 0 );
+        x264_weights_analyse( h, h->lookahead->next.list[bframes], h->lookahead->last_nonb_frm, 0 );
     }
 
     /* shift sequence to coded order.
@@ -1883,7 +1883,7 @@ int x264_rc_analyse_slice( x264_t *h )
     if( IS_X264_TYPE_I(h->fenc->i_type) ) // I
         p1 = b = 0;
     else if( h->fenc->i_type == X264_TYPE_P ) //P
-        p1 = b = h->fenc->i_bframes + 1;
+        p1 = b = h->fenc->i_bframes_after_nonb + 1;
     else //B
     {
         p1 = (h->fref_nearest[1]->i_poc - h->fref_nearest[0]->i_poc)/2;
