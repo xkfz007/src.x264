@@ -1,0 +1,57 @@
+# Makefile
+
+include config.mak
+
+SRCS = src/analyse.c src/cabac.c src/cavlc.c src/common.c src/dct.c \
+       src/enc_cabac.c src/enc_macroblock.c src/enc_set.c src/encoder.c \
+       src/frame.c src/getopt.c src/macroblock.c src/mc.c src/me.c src/pixel.c \
+       src/predict.c src/quant.c src/ratecontrol.c src/rdo.c src/set.c src/x264.c
+
+# SRCCLI = 
+
+OBJS = $(SRCS:%.c=%.o)
+# OBJCLI = $(SRCCLI:%.c=%.o)
+#DEP  = depend
+
+.PHONY: default fprofiled clean distclean install uninstall
+default: x264$(EXE)
+
+#libx264.a: .depend $(OBJS) $(OBJASM)
+#	ar rc libx264.a $(OBJS) $(OBJASM)
+#	ranlib libx264.a
+
+#$(SONAME): .depend $(OBJS) $(OBJASM)
+#	$(CC) -shared -o $@ $(OBJS) $(OBJASM) -Wl,-soname,$(SONAME)
+LDFLAGS = -lm
+
+x264$(EXE): $(OBJS)  
+	$(CC) -o $@ $+ $(LDFLAGS)
+
+#x264vfw.dll: libx264.a $(wildcard vfw/*.c vfw/*.h)
+#	make -C vfw/build/cygwin
+
+#checkasm: tools/checkasm.o libx264.a
+#	$(CC) -o $@ $+ $(LDFLAGS)
+
+#common/amd64/*.o: common/amd64/amd64inc.asm
+#common/i386/*.o: common/i386/i386inc.asm
+#%.o: %.asm
+#	$(AS) $(ASFLAGS) -o $@ $<
+
+#.depend: config.mak
+#	rm -f .depend
+# Hacky - because gcc 2.9x doesn't have -MT
+#	$(foreach SRC, $(SRCS) $(SRCCLI), ( echo -n "`dirname $(SRC)`/" && $(CC) $(CFLAGS) $(SRC) -MM -g0 ) 1>> .depend;)
+
+#config.mak: $(wildcard .svn/entries */.svn/entries */*/.svn/entries)
+#	./configure $(CONFIGURE_ARGS)
+
+#depend: .depend
+#ifneq ($(wildcard .depend),)
+#include .depend
+#endif
+
+clean:
+	rm -f $(OBJS)  x264 x264.exe 
+
+

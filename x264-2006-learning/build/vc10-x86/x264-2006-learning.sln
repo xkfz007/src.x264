@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x264-2006-learning", "x264-2006-learning.vcxproj", "{0572705C-76D1-4B8C-B103-7192D36213DE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0572705C-76D1-4B8C-B103-7192D36213DE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0572705C-76D1-4B8C-B103-7192D36213DE}.Debug|Win32.Build.0 = Debug|Win32
+		{0572705C-76D1-4B8C-B103-7192D36213DE}.Release|Win32.ActiveCfg = Release|Win32
+		{0572705C-76D1-4B8C-B103-7192D36213DE}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
