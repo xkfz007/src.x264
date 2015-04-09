@@ -1,0 +1,9 @@
+#ifndef __X264_CONFIG_H__
+#define __X264_CONFIG_H__
+
+
+#define X264_BIT_DEPTH 8
+//#define BIT_DEPTH 8
+#define X264_GPL       1
+
+#endif
