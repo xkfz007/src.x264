@@ -1,7 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test_Windows", "Test_Windows\Test_Windows-vc9.vcproj", "{F56FE714-149D-4D92-B68D-3EF3417B0160}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test_Windows", "x264-2012.vcxproj", "{F56FE714-149D-4D92-B68D-3EF3417B0160}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
