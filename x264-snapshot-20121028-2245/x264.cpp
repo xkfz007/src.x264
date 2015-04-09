@@ -36,6 +36,7 @@
 #include "output/output.h"
 #include "filters/filters.h"
 #include "extras/stdint.h"
+#include "encoder/ratecontrol.h"
 
 #define FAIL_IF_ERROR( cond, ... ) FAIL_IF_ERR( cond, "x264", __VA_ARGS__ )
 
@@ -285,6 +286,12 @@ int main( int argc, char **argv )
     x264_param_t param;
     cli_opt_t opt = {0};
     int ret = 0;
+#if OUTPUT_FRAME_MB_BITS
+    {
+      FILE*fp=fopen(GET_FILENAME(OUTPUT_FRAME_MB_BITS),"w");
+      fclose(fp);
+    }
+#endif
 
     FAIL_IF_ERROR( x264_threading_init(), "unable to initialize threading\n" )
 
@@ -1001,6 +1008,8 @@ static struct option long_options[] =
     { "dump-yuv",    required_argument, NULL, 0 },
     { "sps-id",      required_argument, NULL, 0 },
     { "aud",               no_argument, NULL, 0 },
+    { "global-header",   no_argument, NULL, 0 },
+    { "repeat-headers",  no_argument, NULL, 1 },
     { "nr",          required_argument, NULL, 0 },
     { "cqm",         required_argument, NULL, 0 },
     { "cqmfile",     required_argument, NULL, 0 },

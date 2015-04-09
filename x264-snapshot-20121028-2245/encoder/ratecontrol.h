@@ -63,5 +63,14 @@ int x264_weighted_reference_duplicate( x264_t *h, int i_ref, const x264_weight_t
 void x264_threads_distribute_ratecontrol( x264_t *h );
 void x264_threads_merge_ratecontrol( x264_t *h );
 void x264_hrd_fullness( x264_t *h );
+
+#define GET_FILENAME(x) #x".txt"
+#define FRAME_COST_OUTPUT 0
+#define FIXQP_FRAME_COST 0
+#define DEBUG_CUTREE_INFO 0
+#define OUTPUT_FRAME_MB_BITS 0
+#define POC_FORMAT "%5d"
+#define MB_FORMAT "%5d"
+#define FRM_FORMAT "%10d\n"
 #endif
 

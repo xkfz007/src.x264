@@ -476,6 +476,23 @@ static void x264_slicetype_mb_cost( x264_t *h, x264_mb_analysis_t *a,
 
     h->mb.pic.p_fenc[0] = h->mb.pic.fenc_buf;
     h->mc.copy[PIXEL_8x8]( h->mb.pic.p_fenc[0], FENC_STRIDE, &fenc->lowres[0][i_pel_offset], i_stride, 8 );
+#if FRAME_COST_OUTPUT
+  FILE* pf = fopen(GET_FILENAME(FRAME_COST_OUTPUT), "a+");
+// fprintf(pf, "CU(%lld:%d,%d):p0=%d b=%d p1=%d b-p0=%d p1-b=%d\n", enc->frame_count, cu_y, cu_x, p0, b, p1, b - p0, p1 - b);
+  fprintf(pf, "CU(%d,%d):\n", i_mb_y, i_mb_x);
+  for(int y = -8; y < 8; y++) {
+	  if(!y)
+		  fprintf(pf,"-----------------------------------------------------------------\n");
+    for(int x = -8; x < 8; x++) {
+		if(!x)
+			fprintf(pf, "|%4d", (&fenc->lowres[0][i_pel_offset])[x + y * i_stride]);
+		else
+			fprintf(pf, "%4d", (&fenc->lowres[0][i_pel_offset])[x + y * i_stride]);
+    }
+	fprintf(pf, "\n");
+  }
+  fclose(pf);
+#endif
 
     if( p0 == p1 )
         goto lowres_intra_mb;
@@ -663,6 +680,20 @@ skip_motionest:
             CP32( m[l].mv, fenc_mvs[l] );
             m[l].cost = *fenc_costs[l];
         }
+#if FRAME_COST_OUTPUT
+    {
+      FILE* pf = fopen(GET_FILENAME(FRAME_COST_OUTPUT), "a+");
+      fprintf(pf, "\tfenc_mvs[%d]=(%d,%d) \n", i_mb_xy, fenc_mvs[l][0][0], fenc_mvs[l][0][1]);
+      fclose(pf);
+    }
+#endif
+#if FRAME_COST_OUTPUT
+    {
+      FILE* pf = fopen(GET_FILENAME(FRAME_COST_OUTPUT), "a+");
+      fprintf(pf, "Inter cost: %d\n", *fenc_costs[l]);
+      fclose(pf);
+    }
+#endif
         COPY2_IF_LT( i_bcost, m[l].cost, list_used, l+1 );
     }
 
@@ -726,6 +757,13 @@ lowres_intra_mb:
                 i_icost = X264_MIN( i_icost, satd );
             }
         }
+#if FRAME_COST_OUTPUT
+  {
+    FILE* pf = fopen(GET_FILENAME(FRAME_COST_OUTPUT), "a+");
+    fprintf(pf, "Intra cost best: %d\n", i_icost);
+    fclose(pf);
+  }
+#endif
 
         i_icost += intra_penalty + lowres_penalty;
         fenc->i_intra_cost[i_mb_xy] = i_icost;
@@ -776,6 +814,13 @@ lowres_intra_mb:
     }
 
     fenc->lowres_costs[b-p0][p1-b][i_mb_xy] = X264_MIN( i_bcost, LOWRES_COST_MASK ) + (list_used << LOWRES_COST_SHIFT);
+#if FRAME_COST_OUTPUT
+  {
+    FILE* pf = fopen(GET_FILENAME(FRAME_COST_OUTPUT), "a+");
+    fprintf(pf, "Final CU cost: %d\n", i_bcost);
+    fclose(pf);
+  }
+#endif
 }
 #undef TRY_BIDIR
 
@@ -808,7 +853,11 @@ static void x264_slicetype_slice_cost( x264_slicetype_slice_t *s )
 
     /* The edge mbs seem to reduce the predictive quality of the
      * whole frame's score, but are needed for a spatial distribution. */
+#if !(FRAME_COST_OUTPUT||FIXQP_FRAME_COST)
     int do_edges = h->param.rc.b_mb_tree || h->param.rc.i_vbv_buffer_size || h->mb.i_mb_width <= 2 || h->mb.i_mb_height <= 2;
+#else
+	int do_edges=1;
+#endif
 
     int start_y = X264_MIN( h->i_threadslice_end - 1, h->mb.i_mb_height - 2 + do_edges );
     int end_y = X264_MAX( h->i_threadslice_start, 1 - do_edges );
@@ -867,6 +916,9 @@ static int x264_slicetype_frame_cost( x264_t *h, x264_mb_analysis_t *a,
         if( h->param.i_lookahead_threads > 1 )
         {
             x264_slicetype_slice_t s[X264_LOOKAHEAD_THREAD_MAX];
+#if FIXQP_FRAME_COST
+			int th_height=(h->mb.i_mb_height + h->param.i_lookahead_threads/2) / h->param.i_lookahead_threads;
+#endif
 
             for( int i = 0; i < h->param.i_lookahead_threads; i++ )
             {
@@ -889,6 +941,10 @@ static int x264_slicetype_frame_cost( x264_t *h, x264_mb_analysis_t *a,
 
                 t->i_threadslice_start = ((h->mb.i_mb_height *  i    + h->param.i_lookahead_threads/2) / h->param.i_lookahead_threads);
                 t->i_threadslice_end   = ((h->mb.i_mb_height * (i+1) + h->param.i_lookahead_threads/2) / h->param.i_lookahead_threads);
+#if FIXQP_FRAME_COST
+				t->i_threadslice_start=i*th_height;
+				t->i_threadslice_end=X264_MIN((i+1)*th_height,h->mb.i_mb_height);
+#endif
 
                 int thread_height = t->i_threadslice_end - t->i_threadslice_start;
                 int thread_output_size = thread_height + NUM_INTS;
@@ -960,7 +1016,20 @@ static int x264_slicetype_frame_cost( x264_t *h, x264_mb_analysis_t *a,
             fenc->b_intra_calculated = 1;
 
         fenc->i_cost_est[b-p0][p1-b] = i_score;
+#if FRAME_COST_OUTPUT
+    {
+      FILE* pf = fopen(GET_FILENAME(FRAME_COST_OUTPUT), "a+");
+      fprintf(pf, "Frame cost: %d\n", i_score);
+      fclose(pf);
+    }
+
+#endif
         x264_emms();
+#if FRAME_COST_OUT
+	fprintf(stderr,"1st:%d fenc->i_cost_est[%d][%d]=%d:[p0,b,p1]=[%d,%d,%d:%d,%d,%d]\n",h->i_frame,
+		b-p0,p1-b,fenc->i_cost_est[b-p0][p1-b],p0,b,p1,frames[p0]->i_frame,frames[b]->i_frame,frames[p1]->i_frame);
+	fflush(stderr);
+#endif
     }
 
     if( b_intra_penalty )
@@ -1027,8 +1096,22 @@ static void x264_macroblock_tree_finish( x264_t *h, x264_frame_t *frame, float a
 #endif
             float log2_ratio = x264_log2(intra_cost + propagate_cost) - x264_log2(intra_cost) + weightdelta;
             frame->f_qp_offset[mb_index] = frame->f_qp_offset_aq[mb_index] - strength * log2_ratio;
+#if DEBUG_CUTREE_INFO
+	  {
+		  FILE* pf = fopen(GET_FILENAME(DEBUG_CUTREE_INFO), "a+");
+		  fprintf(pf,"(%3.2f, %3.2f) ",frame->f_qp_offset[mb_index],frame->f_qp_offset_aq[mb_index]);
+		  fclose(pf);
+	  }
+#endif
         }
     }
+#if DEBUG_CUTREE_INFO
+  {
+		  FILE* pf = fopen(GET_FILENAME(DEBUG_CUTREE_INFO), "a+");
+		  fprintf(pf,"\n");
+		  fclose(pf);
+  }
+#endif
 }
 
 static void x264_macroblock_tree_propagate( x264_t *h, x264_frame_t **frames, float average_duration, int p0, int p1, int b, int referenced )
@@ -1794,7 +1877,9 @@ void x264_slicetype_decide( x264_t *h )
     }
 
     /* calculate the frame costs ahead of time for x264_rc_analyse_slice while we still have lowres */
+#if !(FRAME_COST_OUTPUT||FIXQP_FRAME_COST)
     if( h->param.rc.i_rc_method != X264_RC_CQP )
+#endif
     {
         x264_mb_analysis_t a;
         int p0, p1, b;

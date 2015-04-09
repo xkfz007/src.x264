@@ -590,7 +590,7 @@ struct x264_t
         /* frames used for reference + sentinels (guard) */
         x264_frame_t *reference[X264_REF_MAX+2];
 
-        int i_last_keyframe;       /* Frame number of the last keyframe */
+        //int i_last_keyframe;       /* Frame number of the last keyframe */
         int i_last_idr;            /* Frame number of the last IDR (not RP)*/
         int i_poc_last_open_gop;   /* Poc of the I frame of the last open-gop. The value
                                     * is only assigned during the period between that
@@ -981,6 +981,8 @@ struct x264_t
 #endif
 
 #include "rectangle.h"
+
+#define USE_NORMAL_FPS 1
 
 #endif
 

@@ -508,6 +508,9 @@ static int x264_validate_parameters( x264_t *h, int b_open )
     if( h->param.i_lookahead_threads == X264_THREADS_AUTO )
         h->param.i_lookahead_threads = h->param.i_threads / (h->param.b_sliced_threads?1:6);
     int max_sliced_threads = X264_MAX( 1, (h->param.i_height+15)/16 / 4 );
+#if FIXQP_FRAME_COST
+	max_sliced_threads=(h->param.i_height+15)/16;
+#endif
     if( h->param.i_threads > 1 )
     {
 #if !HAVE_THREAD
@@ -521,11 +524,13 @@ static int x264_validate_parameters( x264_t *h, int b_open )
     }
     h->param.i_threads = x264_clip3( h->param.i_threads, 1, X264_THREAD_MAX );
     h->param.i_lookahead_threads = x264_clip3( h->param.i_lookahead_threads, 1, X264_MIN( max_sliced_threads, X264_LOOKAHEAD_THREAD_MAX ) );
+#if !FIXQP_FRAME_COST
     if( h->param.i_threads == 1 )
     {
         h->param.b_sliced_threads = 0;
         h->param.i_lookahead_threads = 1;
     }
+#endif
     h->i_thread_frames = h->param.b_sliced_threads ? 1 : h->param.i_threads;
     if( h->i_thread_frames > 1 )
         h->param.nalu_process = NULL;
@@ -1103,6 +1108,7 @@ static void x264_set_aspect_ratio( x264_t *h, x264_param_t *param, int initial )
 }
 #if PARAM_OUT
 static void param_out(x264_param_t *param){
+fprintf(stderr,"param->b_repeat_headers=%d\n",param->b_repeat_headers);
 fprintf(stderr,"param->i_threads=%d\n",param->i_threads);
 fprintf(stderr,"param->i_lookahead_threads=%d\n",param->i_lookahead_threads);
 fprintf(stderr,"param->b_sliced_threads=%d\n",param->b_sliced_threads);
@@ -1171,19 +1177,19 @@ fprintf(stderr,"param->i_fps_den=%d\n",param->i_fps_den);
 	default:
 		fprintf(stderr,"X264_RC_CQP\n");
 	}
-    fprintf(stderr,"param->rc.i_bitrate =%d\n",param->rc.i_bitrate);
-    fprintf(stderr,"param->rc.f_rate_tolerance =%f\n",param->rc.f_rate_tolerance);
-    fprintf(stderr,"param->rc.i_vbv_max_bitrate =%d\n",param->rc.i_vbv_max_bitrate);
-    fprintf(stderr,"param->rc.i_vbv_buffer_size =%d\n",param->rc.i_vbv_buffer_size);
-    fprintf(stderr,"param->rc.f_vbv_buffer_init =%f\n",param->rc.f_vbv_buffer_init);
-    fprintf(stderr,"param->rc.i_qp_constant =%d\n",param->rc.i_qp_constant);
-    fprintf(stderr,"param->rc.f_rf_constant =%f\n",param->rc.f_rf_constant);
-    fprintf(stderr,"param->rc.i_qp_min =%d\n",param->rc.i_qp_min);
-    fprintf(stderr,"param->rc.i_qp_max =%d\n",param->rc.i_qp_max);
-    fprintf(stderr,"param->rc.i_qp_step =%d\n",param->rc.i_qp_step);
-    fprintf(stderr,"param->rc.f_ip_factor =%f\n",param->rc.f_ip_factor);
-    fprintf(stderr,"param->rc.f_pb_factor =%f\n",param->rc.f_pb_factor);
-    fprintf(stderr,"param->rc.i_aq_mode =");
+    fprintf(stderr,"param->rc.i_bitrate=%d\n",param->rc.i_bitrate);
+    fprintf(stderr,"param->rc.f_rate_tolerance=%f\n",param->rc.f_rate_tolerance);
+    fprintf(stderr,"param->rc.i_vbv_max_bitrate=%d\n",param->rc.i_vbv_max_bitrate);
+    fprintf(stderr,"param->rc.i_vbv_buffer_size=%d\n",param->rc.i_vbv_buffer_size);
+    fprintf(stderr,"param->rc.f_vbv_buffer_init=%f\n",param->rc.f_vbv_buffer_init);
+    fprintf(stderr,"param->rc.i_qp_constant=%d\n",param->rc.i_qp_constant);
+    fprintf(stderr,"param->rc.f_rf_constant=%f\n",param->rc.f_rf_constant);
+    fprintf(stderr,"param->rc.i_qp_min=%d\n",param->rc.i_qp_min);
+    fprintf(stderr,"param->rc.i_qp_max=%d\n",param->rc.i_qp_max);
+    fprintf(stderr,"param->rc.i_qp_step=%d\n",param->rc.i_qp_step);
+    fprintf(stderr,"param->rc.f_ip_factor=%f\n",param->rc.f_ip_factor);
+    fprintf(stderr,"param->rc.f_pb_factor=%f\n",param->rc.f_pb_factor);
+    fprintf(stderr,"param->rc.i_aq_mode=");
 	switch(param->rc.i_aq_mode){
 	case X264_AQ_AUTOVARIANCE:
 		fprintf(stderr,"X264_AQ_AUTOVARIANCE(2)\n");
@@ -1194,18 +1200,18 @@ fprintf(stderr,"param->i_fps_den=%d\n",param->i_fps_den);
 	default:
 		fprintf(stderr,"X264_AQ_NONE(0)\n");
 	}
-    fprintf(stderr,"param->rc.f_aq_strength =%f\n",param->rc.f_aq_strength);
-    fprintf(stderr,"param->rc.i_lookahead =%d\n",param->rc.i_lookahead);
+    fprintf(stderr,"param->rc.f_aq_strength=%f\n",param->rc.f_aq_strength);
+    fprintf(stderr,"param->rc.i_lookahead=%d\n",param->rc.i_lookahead);
 
-    fprintf(stderr,"param->rc.b_stat_write =%d\n",param->rc.b_stat_write);
-    fprintf(stderr,"param->rc.psz_stat_out =%s\n",param->rc.psz_stat_out);
-    fprintf(stderr,"param->rc.b_stat_read =%d\n",param->rc.b_stat_read);
-    fprintf(stderr,"param->rc.psz_stat_in =%s\n",param->rc.psz_stat_in);
-    fprintf(stderr,"param->rc.f_qcompress =%f\n",param->rc.f_qcompress);
-    fprintf(stderr,"param->rc.f_qblur =%f\n",param->rc.f_qblur);
-    fprintf(stderr,"param->rc.f_complexity_blur =%f\n",param->rc.f_complexity_blur);
-    fprintf(stderr,"param->rc.i_zones =%d\n",param->rc.i_zones);
-	fprintf(stderr,"param->rc.b_mb_tree =%d\n",param->rc.b_mb_tree);
+    fprintf(stderr,"param->rc.b_stat_write=%d\n",param->rc.b_stat_write);
+    fprintf(stderr,"param->rc.psz_stat_out=%s\n",param->rc.psz_stat_out);
+    fprintf(stderr,"param->rc.b_stat_read=%d\n",param->rc.b_stat_read);
+    fprintf(stderr,"param->rc.psz_stat_in=%s\n",param->rc.psz_stat_in);
+    fprintf(stderr,"param->rc.f_qcompress=%f\n",param->rc.f_qcompress);
+    fprintf(stderr,"param->rc.f_qblur=%f\n",param->rc.f_qblur);
+    fprintf(stderr,"param->rc.f_complexity_blur=%f\n",param->rc.f_complexity_blur);
+    fprintf(stderr,"param->rc.i_zones=%d\n",param->rc.i_zones);
+	fprintf(stderr,"param->rc.b_mb_tree=%d\n",param->rc.b_mb_tree);
 	fprintf(stderr,"param->analyse.intra=");
 	if(param->analyse.intra&X264_ANALYSE_I4x4)
 		fprintf(stderr,"I4x4,");
@@ -1226,17 +1232,17 @@ fprintf(stderr,"param->i_fps_den=%d\n",param->i_fps_den);
 		fprintf(stderr,"B16x16,B16x8,B8x16,B8x8,");
 	fprintf(stderr,"\n");
 
-	fprintf(stderr,"param->analyse.i_direct_mv_pred =%d\n",param->analyse.i_direct_mv_pred);
-	fprintf(stderr,"param->analyse.i_me_range =%d\n",param->analyse.i_me_range);
-	fprintf(stderr,"param->analyse.i_subpel_refine =%d\n",param->analyse.i_subpel_refine);
-	fprintf(stderr,"param->analyse.b_mixed_references =%d\n",param->analyse.b_mixed_references);
-	fprintf(stderr,"param->analyse.b_chroma_me =%d\n",param->analyse.b_chroma_me);
-	fprintf(stderr,"param->analyse.b_fast_pskip =%d\n",param->analyse.b_fast_pskip);
-	fprintf(stderr,"param->analyse.b_transform_8x8 =%d\n",param->analyse.b_transform_8x8);
-	fprintf(stderr,"param->analyse.i_trellis =%d\n",param->analyse.i_trellis);
-	fprintf(stderr,"param->analyse.b_psnr =%d\n",param->analyse.b_psnr);
-	fprintf(stderr,"param->analyse.b_ssim =%d\n",param->analyse.b_ssim);
-	fprintf(stderr,"param->analyse.i_weighted_pred =");
+	fprintf(stderr,"param->analyse.i_direct_mv_pred=%d\n",param->analyse.i_direct_mv_pred);
+	fprintf(stderr,"param->analyse.i_me_range=%d\n",param->analyse.i_me_range);
+	fprintf(stderr,"param->analyse.i_subpel_refine=%d\n",param->analyse.i_subpel_refine);
+	fprintf(stderr,"param->analyse.b_mixed_references=%d\n",param->analyse.b_mixed_references);
+	fprintf(stderr,"param->analyse.b_chroma_me=%d\n",param->analyse.b_chroma_me);
+	fprintf(stderr,"param->analyse.b_fast_pskip=%d\n",param->analyse.b_fast_pskip);
+	fprintf(stderr,"param->analyse.b_transform_8x8=%d\n",param->analyse.b_transform_8x8);
+	fprintf(stderr,"param->analyse.i_trellis=%d\n",param->analyse.i_trellis);
+	fprintf(stderr,"param->analyse.b_psnr=%d\n",param->analyse.b_psnr);
+	fprintf(stderr,"param->analyse.b_ssim=%d\n",param->analyse.b_ssim);
+	fprintf(stderr,"param->analyse.i_weighted_pred=");
 	switch(param->analyse.i_weighted_pred ){
 	case X264_WEIGHTP_NONE:
 		fprintf(stderr,"X264_WEIGHTP_NONE(0)\n");
@@ -1354,10 +1360,13 @@ x264_t *x264_encoder_open( x264_param_t *param )
           || h->param.rc.b_mb_tree
           || h->param.analyse.i_weighted_pred );
     h->frames.b_have_lowres |= h->param.rc.b_stat_read && h->param.rc.i_vbv_buffer_size > 0;
+#if FRAME_COST_OUTPUT||FIXQP_FRAME_COST
+	h->frames.b_have_lowres=1;
+#endif
     h->frames.b_have_sub8x8_esa = !!(h->param.analyse.inter & X264_ANALYSE_PSUB8x8);
 
     h->frames.i_last_idr =
-    h->frames.i_last_keyframe = - h->param.i_keyint_max;
+    /*h->frames.i_last_keyframe =*/ - h->param.i_keyint_max;
     h->frames.i_input    = 0;
     h->frames.i_largest_pts = h->frames.i_second_largest_pts = -1;
     h->frames.i_poc_last_open_gop = -1;
@@ -2577,6 +2586,13 @@ reencode:
 
         /* save cache */
         x264_macroblock_cache_save( h );
+#if OUTPUT_FRAME_MB_BITS
+    {
+      FILE*fp=fopen(GET_FILENAME(OUTPUT_FRAME_MB_BITS),"a");
+      fprintf(fp,MB_FORMAT,mb_size);
+      fclose(fp);
+    }
+#endif
 
         if( x264_ratecontrol_mb( h, mb_size ) < 0 )
         {
@@ -3091,7 +3107,7 @@ int     x264_encoder_encode( x264_t *h,
 
     if( h->fenc->b_keyframe )
     {
-        h->frames.i_last_keyframe = h->fenc->i_frame;
+        //h->frames.i_last_keyframe = h->fenc->i_frame;
         if( h->fenc->i_type == X264_TYPE_IDR )
         {
             h->i_frame_num = 0;
@@ -3363,6 +3379,13 @@ int     x264_encoder_encode( x264_t *h,
     if( h->fenc->b_keyframe && h->param.b_intra_refresh )
         h->i_cpb_delay_pir_offset_next = h->fenc->i_cpb_delay;
 
+#if OUTPUT_FRAME_MB_BITS
+    {
+      FILE*fp=fopen(GET_FILENAME(OUTPUT_FRAME_MB_BITS),"a");
+      fprintf(fp,POC_FORMAT, h->fenc->i_frame);
+      fclose(fp);
+    }
+#endif
     /* Init the rate control */
     /* FIXME: Include slice header bit cost. */
     x264_ratecontrol_start( h, h->fenc->i_qpplus1, overhead*8 );
@@ -3497,6 +3520,13 @@ static int x264_encoder_frame_end( x264_t *h, x264_t *thread_current,
 
     /* ---------------------- Update encoder state ------------------------- */
 
+#if OUTPUT_FRAME_MB_BITS
+    {
+      FILE*fp=fopen(GET_FILENAME(OUTPUT_FRAME_MB_BITS),"a");
+      fprintf(fp,FRM_FORMAT,frame_size);
+      fclose(fp);
+    }
+#endif
     /* update rc */
     int filler = 0;
     if( x264_ratecontrol_end( h, frame_size * 8, &filler ) < 0 )
@@ -3631,7 +3661,7 @@ static int x264_encoder_frame_end( x264_t *h, x264_t *thread_current,
     psz_message[79] = '\0';
 
     x264_log( h, X264_LOG_DEBUG,
-                  "frame=%4d QP=%.2f NAL=%d Slice:%c Poc:%-3d I:%-4d P:%-4d SKIP:%-4d size=%d bytes%s\n",
+                  "frame=%4d QP=%.2f NAL=%d Slice:%c Poc:%-3d I:%-4d P:%-4d SKIP:%-4d size=%d bits%s\n",
               h->i_frame,
               h->fdec->f_qp_avg_aq,
               h->i_nal_ref_idc,
@@ -3640,7 +3670,7 @@ static int x264_encoder_frame_end( x264_t *h, x264_t *thread_current,
               h->stat.frame.i_mb_count_i,
               h->stat.frame.i_mb_count_p,
               h->stat.frame.i_mb_count_skip,
-              frame_size,
+              frame_size*8,
               psz_message );
 
     // keep stats all in one place
