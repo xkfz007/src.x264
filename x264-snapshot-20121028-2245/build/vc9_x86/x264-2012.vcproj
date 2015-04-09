@@ -126,7 +126,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\;..\..\..\common\"
+				AdditionalIncludeDirectories="..\..\"
 				PreprocessorDefinitions="_WIN32;WIN32;_DEBUG;_CONSOLE;__ICL;__STDC_LIMIT_MACROS;HAVE_CONFIG_H"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
