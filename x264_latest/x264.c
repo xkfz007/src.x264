@@ -1135,7 +1135,7 @@ static struct option long_options[] =
     { "stitchable",        no_argument, NULL, 0 },
     { "filler",            no_argument, NULL, 0 },
     { "global-header",         no_argument, NULL, 0 },
-    { "repeat-headers",         no_argument, NULL, 0 },
+    { "repeat-headers",         no_argument, NULL, 1 },
     {0, 0, 0, 0}
 };
 
