@@ -911,6 +911,8 @@ static void help( x264_param_t *defaults, int longhelp )
     H2( "      --dump-yuv <string>     Save reconstructed frames\n" );
     H2( "      --sps-id <integer>      Set SPS and PPS id numbers [%d]\n", defaults->i_sps_id );
     H2( "      --aud                   Use access unit delimiters\n" );
+    H2( "      --global-header         Emit SPS and PPS headers only at first keyframe\n" );
+    H2( "      --repeat-headers        Emit SPS and PPS headers at each keyframe\n" );
     H2( "      --force-cfr             Force constant framerate timestamp generation\n" );
     H2( "      --tcfile-in <string>    Force timestamp generation with timecode file\n" );
     H2( "      --tcfile-out <string>   Output timecode v2 file from input timestamps\n" );
@@ -1132,6 +1134,8 @@ static struct option long_options[] =
     { "input-range", required_argument, NULL, OPT_INPUT_RANGE },
     { "stitchable",        no_argument, NULL, 0 },
     { "filler",            no_argument, NULL, 0 },
+    { "global-header",         no_argument, NULL, 0 },
+    { "repeat-headers",         no_argument, NULL, 0 },
     {0, 0, 0, 0}
 };
 
