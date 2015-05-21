@@ -1,0 +1,1 @@
+x264vfw is the VfW (Video for Windows) version of well known x264 encoder + ffh264 decoder (from FFmpeg/Libav project).
