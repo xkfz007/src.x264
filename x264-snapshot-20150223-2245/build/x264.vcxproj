@@ -26,7 +26,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
@@ -38,14 +38,14 @@
     <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
@@ -69,28 +69,28 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>$(ProjectName)</TargetName>
-    <IntDir>$(SolutionDir)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)d</TargetName>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>x264</TargetName>
-    <IntDir>$(SolutionDir)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)d</TargetName>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <TargetExt>.dll</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>x264</TargetName>
-    <IntDir>$(SolutionDir)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>x264</TargetName>
-    <IntDir>$(SolutionDir)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>$(ProjectName)</TargetName>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -98,7 +98,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;X264_API_IMPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <C99Support>true</C99Support>
       <ObjectFileName>$(IntDir)\obj\%(RelativeDir)\</ObjectFileName>
       <AdditionalIncludeDirectories>..\;..\extras;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -109,6 +109,7 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ImportLibrary>
       </ImportLibrary>
+      <ModuleDefinitionFile>..\x264.def</ModuleDefinitionFile>
     </Link>
     <ManifestResourceCompile>
       <ResourceOutputFileName>$(IntDir)$(TargetName)$(TargetExt).embed.manifest.res</ResourceOutputFileName>
@@ -120,15 +121,16 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;X264_API_IMPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <C99Support>true</C99Support>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
-      <AdditionalIncludeDirectories>..\extras;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)\obj\%(RelativeDir)\</ObjectFileName>
+      <AdditionalIncludeDirectories>..\;..\extras;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ModuleDefinitionFile>..\x264.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -139,10 +141,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;X264_API_IMPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <C99Support>true</C99Support>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
-      <AdditionalIncludeDirectories>..\extras;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)\obj\%(RelativeDir)\</ObjectFileName>
+      <AdditionalIncludeDirectories>..\;..\extras;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -150,6 +152,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ModuleDefinitionFile>..\x264.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -160,10 +163,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;X264_API_IMPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <C99Support>true</C99Support>
-      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
-      <AdditionalIncludeDirectories>..\extras;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ObjectFileName>$(IntDir)\obj\%(RelativeDir)\</ObjectFileName>
+      <AdditionalIncludeDirectories>..\;..\extras;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -171,6 +174,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ModuleDefinitionFile>..\x264.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -203,7 +207,6 @@
     <ClCompile Include="..\encoder\ratecontrol.c" />
     <ClCompile Include="..\encoder\set.c" />
     <ClCompile Include="..\encoder\slicetype-cl.c" />
-    <ClCompile Include="..\extras\getopt.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\bitstream.h" />
@@ -222,14 +225,11 @@
     <ClInclude Include="..\common\set.h" />
     <ClInclude Include="..\common\threadpool.h" />
     <ClInclude Include="..\common\win32thread.h" />
-    <ClInclude Include="..\config.h" />
     <ClInclude Include="..\encoder\analyse.h" />
     <ClInclude Include="..\encoder\macroblock.h" />
     <ClInclude Include="..\encoder\me.h" />
     <ClInclude Include="..\encoder\ratecontrol.h" />
     <ClInclude Include="..\encoder\set.h" />
-    <ClInclude Include="..\x264.h" />
-    <ClInclude Include="..\x264_config.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

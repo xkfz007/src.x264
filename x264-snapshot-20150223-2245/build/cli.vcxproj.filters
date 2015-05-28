@@ -69,6 +69,12 @@
     <ClInclude Include="..\input\input.h">
       <Filter>Header Files\input</Filter>
     </ClInclude>
+    <ClInclude Include="..\extras\getopt.h">
+      <Filter>Header Files\extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\x264.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\x264.c">
@@ -136,6 +142,9 @@
     </ClCompile>
     <ClCompile Include="..\output\raw.c">
       <Filter>Source Files\output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\extras\getopt.c">
+      <Filter>Source Files\extras</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
