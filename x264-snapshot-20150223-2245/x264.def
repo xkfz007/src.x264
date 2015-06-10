@@ -42,3 +42,8 @@ x264_vfprintf
 x264_is_pipe
 x264_mdate
 x264_cpu_num_processors
+
+;
+x264_levels
+x264_bit_depth
+x264_chroma_format
