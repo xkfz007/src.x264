@@ -24,6 +24,8 @@
  *****************************************************************************/
 
 #include "common.h"
+#include "frame.h"
+
 
 typedef struct
 {
@@ -32,7 +34,7 @@ typedef struct
     void *ret;
 } x264_threadpool_job_t;
 
-struct x264_threadpool_t
+typedef struct
 {
     int            exit;
     int            threads;
@@ -45,7 +47,8 @@ struct x264_threadpool_t
     x264_sync_frame_list_t uninit; /* list of jobs that are awaiting use */
     x264_sync_frame_list_t run;    /* list of jobs that are queued for processing by the pool */
     x264_sync_frame_list_t done;   /* list of jobs that have finished processing */
-};
+} x264_threadpool_t
+;
 
 static void *x264_threadpool_thread( x264_threadpool_t *pool )
 {

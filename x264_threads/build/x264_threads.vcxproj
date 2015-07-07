@@ -51,7 +51,9 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <C99Support>true</C99Support>
+      <AdditionalIncludeDirectories>..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -76,11 +78,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\common.c" />
+    <ClCompile Include="..\frame.c" />
+    <ClCompile Include="..\osdep.c" />
     <ClCompile Include="..\test.c" />
     <ClCompile Include="..\threadpool.c" />
     <ClCompile Include="..\win32thread.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\common.h" />
+    <ClInclude Include="..\config.h" />
+    <ClInclude Include="..\frame.h" />
+    <ClInclude Include="..\inttypes.h" />
+    <ClInclude Include="..\osdep.h" />
     <ClInclude Include="..\threadpool.h" />
     <ClInclude Include="..\win32thread.h" />
   </ItemGroup>
