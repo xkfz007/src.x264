@@ -1,5 +1,5 @@
 
-#include "frame.h"
+#include "common.h"
 x264_frame_t *x264_frame_shift( x264_frame_t **list )
 {
     x264_frame_t *frame = list[0];

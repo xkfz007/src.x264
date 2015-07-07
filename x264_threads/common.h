@@ -13,6 +13,8 @@
 #include "win32thread.h"
 #include "osdep.h"
 
+#define X264_MIN(a,b) ( (a)<(b) ? (a) : (b) )
+#define X264_MAX(a,b) ( (a)>(b) ? (a) : (b) )
 #if (ARCH_X86 || STACK_ALIGNMENT > 16) && HAVE_MMX
 intptr_t x264_stack_align( void (*func)(), ... );
 #define x264_stack_align(func,...) x264_stack_align((void (*)())func, __VA_ARGS__)
@@ -52,5 +54,5 @@ do {\
     CHECKED_MALLOC( var, size );\
     memset( var, 0, size );\
 } while( 0 )
-
+#include "threadpool.h"
 #endif
