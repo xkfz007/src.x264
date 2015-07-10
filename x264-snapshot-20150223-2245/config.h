@@ -1,5 +1,5 @@
 #define HAVE_MALLOC_H 0
-#define HAVE_X86_INLINE_ASM 1
+#define HAVE_X86_INLINE_ASM 0
 #define HAVE_MMX 0
 #define ARCH_X86_64 1
 #define SYS_WINDOWS 1
@@ -7,8 +7,8 @@
 #define HAVE_WIN32THREAD 1
 #define HAVE_CPU_COUNT 0
 #define HAVE_THREAD 1
-#define HAVE_LOG2F 1
-#define HAVE_AVS 1
+#define HAVE_LOG2F 0
+#define HAVE_AVS 0
 #define USE_AVXSYNTH 0
 #define HAVE_VECTOREXT 0
 #define fseek _fseeki64

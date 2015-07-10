@@ -102,6 +102,7 @@
       <C99Support>true</C99Support>
       <ObjectFileName>$(IntDir)\obj\%(RelativeDir)\</ObjectFileName>
       <AdditionalIncludeDirectories>..\;..\extras;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)\obj\%(RelativeDir)\</AssemblerListingLocation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -121,10 +122,11 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;X264_API_IMPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <C99Support>true</C99Support>
       <ObjectFileName>$(IntDir)\obj\%(RelativeDir)\</ObjectFileName>
       <AdditionalIncludeDirectories>..\;..\extras;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)\obj\%(RelativeDir)\</AssemblerListingLocation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,6 +147,9 @@
       <C99Support>true</C99Support>
       <ObjectFileName>$(IntDir)\obj\%(RelativeDir)\</ObjectFileName>
       <AdditionalIncludeDirectories>..\;..\extras;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>$(IntDir)\obj\%(RelativeDir)\</AssemblerListingLocation>
+      <CompileAs>Default</CompileAs>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -154,6 +159,12 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <ModuleDefinitionFile>..\x264.def</ModuleDefinitionFile>
     </Link>
+    <CustomBuild>
+      <Command>yasm -f win32 -m x86 -DARCH_X86_64=0 -DHIGH_BIT_DEPTH=0 -DBIT_DEPTH=8 -o $(IntDir)\obj\%(RelativeDir)\%(Filename).obj %(Identity)</Command>
+    </CustomBuild>
+    <CustomBuild>
+      <Outputs>$(IntDir)\obj\%(RelativeDir)\%(Filename).obj</Outputs>
+    </CustomBuild>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -163,10 +174,11 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;X264_API_IMPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <C99Support>true</C99Support>
       <ObjectFileName>$(IntDir)\obj\%(RelativeDir)\</ObjectFileName>
       <AdditionalIncludeDirectories>..\;..\extras;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>$(IntDir)\obj\%(RelativeDir)\</AssemblerListingLocation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

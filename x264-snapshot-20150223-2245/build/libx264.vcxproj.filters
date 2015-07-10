@@ -27,9 +27,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\common\bitstream.c">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
     <ClCompile Include="..\common\cabac.c">
       <Filter>Source Files\common</Filter>
     </ClCompile>
@@ -113,6 +110,9 @@
     </ClCompile>
     <ClCompile Include="..\encoder\slicetype-cl.c">
       <Filter>Source Files\encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\common\bitstream.c">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
