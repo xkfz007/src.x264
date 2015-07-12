@@ -1,7 +1,7 @@
 #define HAVE_MALLOC_H 0
 #define HAVE_X86_INLINE_ASM 0
 #define HAVE_MMX 0
-#define ARCH_X86_64 1
+#define ARCH_X86_64 0
 #define SYS_WINDOWS 1
 #define STACK_ALIGNMENT 32
 #define HAVE_WIN32THREAD 1
