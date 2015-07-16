@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "x264_simple_encoder", "x264_simple_encoder.vcxproj", "{5157B6C3-237F-45B2-9033-8D1FA8BDC339}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libx264", "..\..\x264-snapshot-20150223-2245\build\libx264.vcxproj", "{389AD08D-E4A8-4EFF-A2D7-5BEA57E63A7D}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,14 +17,6 @@ Global
 		{5157B6C3-237F-45B2-9033-8D1FA8BDC339}.Release|Win32.ActiveCfg = Release|Win32
 		{5157B6C3-237F-45B2-9033-8D1FA8BDC339}.Release|Win32.Build.0 = Release|Win32
 		{5157B6C3-237F-45B2-9033-8D1FA8BDC339}.Release|x64.ActiveCfg = Release|Win32
-		{389AD08D-E4A8-4EFF-A2D7-5BEA57E63A7D}.Debug|Win32.ActiveCfg = Debug|Win32
-		{389AD08D-E4A8-4EFF-A2D7-5BEA57E63A7D}.Debug|Win32.Build.0 = Debug|Win32
-		{389AD08D-E4A8-4EFF-A2D7-5BEA57E63A7D}.Debug|x64.ActiveCfg = Debug|x64
-		{389AD08D-E4A8-4EFF-A2D7-5BEA57E63A7D}.Debug|x64.Build.0 = Debug|x64
-		{389AD08D-E4A8-4EFF-A2D7-5BEA57E63A7D}.Release|Win32.ActiveCfg = Release|Win32
-		{389AD08D-E4A8-4EFF-A2D7-5BEA57E63A7D}.Release|Win32.Build.0 = Release|Win32
-		{389AD08D-E4A8-4EFF-A2D7-5BEA57E63A7D}.Release|x64.ActiveCfg = Release|x64
-		{389AD08D-E4A8-4EFF-A2D7-5BEA57E63A7D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
