@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="decoder">
+      <UniqueIdentifier>{6283aecf-51ec-4d1a-94be-1f029e768124}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{e37391d0-f1f2-4e89-8849-55e03c532989}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\decoder\decoder.c">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\decoder\macroblock.c">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\decoder\set.c">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\decoder\vlc.c">
+      <Filter>decoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\x264dec.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\decoder\macroblock.h">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\decoder\set.h">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\decoder\vlc.h">
+      <Filter>decoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\common.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\x264.h" />
+    <ClInclude Include="..\common\set.h">
+      <Filter>common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
