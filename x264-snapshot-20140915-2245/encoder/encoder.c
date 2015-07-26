@@ -3927,13 +3927,16 @@ static int x264_encoder_frame_end( x264_t *h, x264_t *thread_current,
                   " SSIM Y:%.5f", pic_out->prop.f_ssim );
     }
     psz_message[79] = '\0';
+    char c=h->sh.i_type == SLICE_TYPE_I ? 'I' : (h->sh.i_type == SLICE_TYPE_P ? 'P' : 'B' );
+    if(!h->fdec->b_kept_as_ref)
+      c += 32; // lower case if unreferenced
 
     x264_log( h, X264_LOG_DEBUG,
                   "frame=%4d QP=%.2f NAL=%d Slice:%c Poc:%-3d I:%-4d P:%-4d SKIP:%-4d size=%d bytes%s\n",
               h->i_frame,
               h->fdec->f_qp_avg_aq,
               h->i_nal_ref_idc,
-              h->sh.i_type == SLICE_TYPE_I ? 'I' : (h->sh.i_type == SLICE_TYPE_P ? 'P' : 'B' ),
+              c,
               h->fdec->i_poc,
               h->stat.frame.i_mb_count_i,
               h->stat.frame.i_mb_count_p,
