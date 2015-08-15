@@ -1,0 +1,37 @@
+----------------------------------------- 
+Simple x264/x265 Launcher version history 
+----------------------------------------- 
+
+Version 2.51 [2015-04-26]
+* Fixed regression: Config files were stored in a wrong directory
+* Updated x265 to version 1.6+239
+
+Version 2.50 [2015-04-17]
+* Simple x264/x265 Launcher is based on the MUtilities library
+* Updated Qt runtime libraries to v4.8.7 snapshot-5 (2015-03-25)
+* Overhauled startup code + show spinner while initializing
+* Much improved Avisynth and VapourSynth detection code
+* Added option to prefer 64-Bit VapourSynth, when available
+* Updated x264 to revision 2538
+* Updated x265 to version 1.6+174
+
+Version 2.46 [2015-01-31]
+* Updated x265 to version 1.4+424
+* Updated x264 to revision 2525
+* Updated Avs2YUV to version 0.24 (BugMaster's mod 3)
+* Proper detection of Windows 10
+* Added new Tuning options for x265 encoder
+
+Version 2.44 [2014-11-02]
+* Updated x265 to version 1.4
+* Updated x264 to revision 2479
+* Some improvements to template handling
+
+Version 2.42 [2014-08-16]
+* Various installer fixes and improvements
+
+Version 2.41 [2014-08-15]
+* Updated x264 and x265 encoders to the latest versions
+* Enabled 2-Pass encoding support for x265 encoder
+* Added support for VapourSynth r24 (minimum required version is r24 now!)
+* Better support for templates saved in program "old" versions
