@@ -44,6 +44,27 @@
     </ClInclude>
     <ClInclude Include="..\x264cli.h" />
     <ClInclude Include="..\x264.h" />
+    <ClInclude Include="..\extras\avisynth_c.h">
+      <Filter>extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extras\avxsynth_c.h">
+      <Filter>extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extras\cl.h">
+      <Filter>extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extras\cl_platform.h">
+      <Filter>extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extras\intel_dispatcher.h">
+      <Filter>extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extras\inttypes.h">
+      <Filter>extras</Filter>
+    </ClInclude>
+    <ClInclude Include="..\extras\stdint.h">
+      <Filter>extras</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\extras\getopt.c">

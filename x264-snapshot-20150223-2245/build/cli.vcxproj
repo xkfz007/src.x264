@@ -102,7 +102,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ImportLibrary>
       </ImportLibrary>
-      <AdditionalDependencies>..\bin\$(Platform)\$(Configuration)\libx264d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\bin\$(Platform)\$(Configuration)\libx264.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -167,7 +167,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\extras\avisynth_c.h" />
+    <ClInclude Include="..\extras\avxsynth_c.h" />
+    <ClInclude Include="..\extras\cl.h" />
+    <ClInclude Include="..\extras\cl_platform.h" />
     <ClInclude Include="..\extras\getopt.h" />
+    <ClInclude Include="..\extras\intel_dispatcher.h" />
+    <ClInclude Include="..\extras\inttypes.h" />
+    <ClInclude Include="..\extras\stdint.h" />
     <ClInclude Include="..\filters\filters.h" />
     <ClInclude Include="..\filters\video\internal.h" />
     <ClInclude Include="..\filters\video\video.h" />
