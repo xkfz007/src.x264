@@ -203,7 +203,6 @@
     <ClCompile Include="..\encoder\me.c" />
     <ClCompile Include="..\encoder\ratecontrol.c" />
     <ClCompile Include="..\encoder\set.c" />
-    <ClCompile Include="..\encoder\slicetype-cl.c" />
     <ClCompile Include="..\extras\getopt.c" />
     <ClCompile Include="..\filters\filters.c" />
     <ClCompile Include="..\filters\video\cache.c" />
