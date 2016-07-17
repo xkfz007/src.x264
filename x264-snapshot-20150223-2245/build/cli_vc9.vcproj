@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="cli_vc9"
+	Name="cli"
 	ProjectGUID="{DC895068-3077-4269-A30E-6EB01ACEE18C}"
 	RootNamespace="cli_vc9"
 	Keyword="Win32Proj"
@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\bin\vc9\$(ConfigurationName)\libx264_vc9.lib"
+				AdditionalDependencies="..\bin\vc9\$(ConfigurationName)\libx264.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)\$(TargetName).pdb"

@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Intel C++ Project"
 	Version="11.1"
-	Name="cli_vc9"
+	Name="cli"
 	ProjectGUID="{4E730D7F-198D-472F-84DF-33DC07B9624F}"
 	VCNestedProjectGUID="{DC895068-3077-4269-A30E-6EB01ACEE18C}"
 	VCNestedProjectFileName="cli_vc9.vcproj">

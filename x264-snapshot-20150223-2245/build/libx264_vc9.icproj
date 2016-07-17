@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Intel C++ Project"
 	Version="11.1"
-	Name="libx264_vc9"
+	Name="libx264"
 	ProjectGUID="{B145EAAF-5C08-4879-BAF4-9C7ED323956E}"
 	VCNestedProjectGUID="{4D52CB0E-B80F-4659-9220-AB8B5E4A27EF}"
 	VCNestedProjectFileName="libx264_vc9.vcproj">
